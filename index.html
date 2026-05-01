@@ -63,6 +63,9 @@
     color: #888; border-bottom: 3px solid transparent; transition: all 0.2s;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     user-select: none; -webkit-user-select: none;
+    /* button reset */
+    background: none; border-top: none; border-left: none; border-right: none;
+    outline: none; -webkit-appearance: none; font-family: inherit;
   }
   .tab.active { color: #667eea; border-bottom-color: #667eea; }
   .tab-icon { font-size: 1.25rem; display: block; margin-bottom: 2px; }
@@ -367,10 +370,10 @@
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="input"><span class="tab-icon">📷</span>入力</div>
-  <div class="tab" data-tab="history"><span class="tab-icon">📋</span>履歴</div>
-  <div class="tab" data-tab="summary"><span class="tab-icon">📊</span>集計</div>
-  <div class="tab" data-tab="settings"><span class="tab-icon">⚙️</span>設定</div>
+  <button class="tab active" data-tab="input"><span class="tab-icon">📷</span>入力</button>
+  <button class="tab" data-tab="history"><span class="tab-icon">📋</span>履歴</button>
+  <button class="tab" data-tab="summary"><span class="tab-icon">📊</span>集計</button>
+  <button class="tab" data-tab="settings"><span class="tab-icon">⚙️</span>設定</button>
 </div>
 
 <!-- TAB: 入力 -->
