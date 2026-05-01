@@ -707,11 +707,9 @@ function copyShareUrl(){
 }
 
 // ─── 秘密URLキーで起動 ───────────────────────────────
-window.addEventListener('DOMContentLoaded', ()=>{
-  const userKey = initUserKey();
-  currentUser = { uid: userKey };
-  subscribeData();
-});
+const userKey = initUserKey();
+currentUser = { uid: userKey };
+subscribeData();
 
 // 支出/入金トグル
 document.querySelectorAll('.type-btn').forEach(btn=>{
