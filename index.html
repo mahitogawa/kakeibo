@@ -575,6 +575,23 @@
 </div>
 
 <script>
+// ─── ログイン関数（最初に定義）───────────────────────
+function doGoogleLogin(){
+  alert('タップ検知！ログイン処理開始...');
+  try{
+    if(typeof firebase==='undefined'){alert('🔴 Firebase未読み込み');return;}
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const btn=document.getElementById('googleLoginBtn');
+    btn.textContent='⏳ ログイン中...'; btn.disabled=true;
+    auth.signInWithRedirect(provider).catch(err=>{
+      btn.disabled=false; btn.textContent='Googleでログイン';
+      alert('🔴 エラー: '+err.code+'\n'+err.message);
+    });
+  }catch(e){
+    alert('🔴 例外: '+e.message);
+  }
+}
+
 // ─── 🔄ボタン ────────────────────────────────────────
 document.getElementById('reloadBtn').addEventListener('click', () => {
   if ('serviceWorker' in navigator) {
@@ -690,19 +707,6 @@ auth.onAuthStateChanged(user=>{
 // リダイレクト後の結果を処理
 auth.getRedirectResult().catch(err=>console.error('redirect error:',err));
 
-function doGoogleLogin(){
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    const btn=document.getElementById('googleLoginBtn');
-    btn.textContent='⏳ ログイン中...'; btn.disabled=true;
-    auth.signInWithRedirect(provider).catch(err=>{
-      btn.disabled=false; btn.textContent='Googleでログイン';
-      alert('🔴 エラー: '+err.code+'\n'+err.message);
-    });
-  }catch(e){
-    alert('🔴 例外: '+e.message);
-  }
-}
 document.getElementById('googleLoginBtn').addEventListener('click', doGoogleLogin);
 
 // 支出/入金トグル
