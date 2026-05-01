@@ -558,6 +558,11 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
     entries.push({id:Date.now(),date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金'});
   }
   entries.sort((a,b)=>b.date.localeCompare(a.date));
+  // 未登録の店名なら設定に自動追加
+  if(shop && !shops.find(s=>s.name===shop)){
+    shops.push({name:shop, cat:selectedCategory||'その他'});
+    saveShops(); renderShopChips();
+  }
   save();updateHeader();resetForm();
   spawnPaws();
   const btn=document.getElementById('saveBtn');
