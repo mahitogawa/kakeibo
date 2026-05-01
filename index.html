@@ -691,17 +691,16 @@ auth.onAuthStateChanged(user=>{
 auth.getRedirectResult().catch(err=>console.error('redirect error:',err));
 
 function doGoogleLogin(){
-  const provider=new firebase.auth.GoogleAuthProvider();
-  const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const btn=document.getElementById('googleLoginBtn');
-  btn.textContent='⏳ ログイン中...'; btn.disabled=true;
-  if(isMobile){
-    auth.signInWithRedirect(provider);
-  } else {
-    auth.signInWithPopup(provider).catch(err=>{
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const btn=document.getElementById('googleLoginBtn');
+    btn.textContent='⏳ ログイン中...'; btn.disabled=true;
+    auth.signInWithRedirect(provider).catch(err=>{
       btn.disabled=false; btn.textContent='Googleでログイン';
-      alert('ログインに失敗しました: '+err.message);
+      alert('🔴 エラー: '+err.code+'\n'+err.message);
     });
+  }catch(e){
+    alert('🔴 例外: '+e.message);
   }
 }
 document.getElementById('googleLoginBtn').addEventListener('click', doGoogleLogin);
