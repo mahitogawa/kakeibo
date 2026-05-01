@@ -183,6 +183,19 @@
   .chart-card h3 { font-size: 1rem; font-weight: 700; color: #333; margin-bottom: 16px; }
   .chart-wrap { max-width: 280px; margin: 0 auto; }
 
+  /* バックアップ通知 */
+  .backup-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: white; border-radius: 16px;
+    padding: 14px 20px; font-size: 0.95rem; font-weight: 700;
+    z-index: 8000; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3); cursor: pointer;
+    animation: slideUp 0.4s ease-out;
+    max-width: 320px; width: 90%;
+  }
+  .backup-toast .toast-close { margin-left: auto; opacity: 0.6; font-size: 1.1rem; }
+  @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+
   /* ロック画面 */
   .lock-screen {
     position: fixed; inset: 0; z-index: 9000;
@@ -465,6 +478,20 @@
           </select>
         </div>
         <button class="btn-add" id="addShopBtn" style="width:100%">＋ 登録する</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">💾 バックアップ・復元</div>
+      <div class="settings-row">
+        <div class="settings-row-icon">📤</div>
+        <div style="flex:1"><div class="settings-row-name">バックアップ</div><div class="settings-row-cat">データをファイルに保存</div></div>
+        <button class="btn-del" id="exportBtn" style="font-size:0.78rem;color:#16a34a;border:1.5px solid #86efac;border-radius:8px;padding:6px 10px;background:#f0fff4">保存</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">📥</div>
+        <div style="flex:1"><div class="settings-row-name">復元</div><div class="settings-row-cat">バックアップから読み込む</div></div>
+        <button class="btn-del" id="importBtn" style="font-size:0.78rem;color:#2563eb;border:1.5px solid #93c5fd;border-radius:8px;padding:6px 10px;background:#eff6ff">読込</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
       </div>
     </div>
     <div class="settings-section">
@@ -910,6 +937,62 @@ fAmountEl.addEventListener('input', () => {
 
 document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
 renderShopChips();updateHeader();
+
+// バックアップ・復元
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const data={entries,shops,exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().split('T')[0];
+  a.href=url; a.download=`nyanlog_backup_${date}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem('nyanlog_last_backup', Date.now());
+});
+document.getElementById('importBtn').addEventListener('click',()=>{
+  if(!confirm('現在のデータに上書きされます。よいですか？'))return;
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.entries){entries=data.entries;save();}
+      if(data.shops){shops=data.shops;saveShops();}
+      updateHeader();renderSettings();
+      alert('✅ 復元しました！');
+    }catch(err){alert('❌ ファイルが正しくありません');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+});
+
+// バックアップリマインダー
+function checkBackupReminder(){
+  if(entries.length===0) return;
+  const last = parseInt(localStorage.getItem('nyanlog_last_backup')||'0');
+  const days = Math.floor((Date.now()-last)/(1000*60*60*24));
+  if(days<7) return;
+  const msg = last===0 ? 'まだバックアップしてないにゃ🐾' : `${days}日間バックアップしてないにゃ🐾`;
+  const toast = document.createElement('div');
+  toast.className='backup-toast';
+  toast.innerHTML=`<span>💾 ${msg}</span><span class="toast-close">✕</span>`;
+  toast.addEventListener('click',e=>{
+    if(e.target.classList.contains('toast-close')||e.target===toast) toast.remove();
+    else {
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+      document.querySelector('.tab[data-tab="settings"]').classList.add('active');
+      document.getElementById('tab-settings').classList.add('active');
+      renderSettings(); toast.remove();
+    }
+  });
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 8000);
+}
+setTimeout(checkBackupReminder, 2000);
 
 // ロック画面
 document.getElementById('lockScreen').addEventListener('click', function(){
