@@ -126,8 +126,9 @@
   }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: white; }
   .form-group textarea { resize: none; height: 80px; }
-  .category-chips { display: flex; flex-wrap: wrap; gap: 10px; }
-  .chip { padding: 10px 16px; border-radius: 24px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; }
+  .category-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .category-chips::-webkit-scrollbar { display: none; }
+  .chip { padding: 10px 16px; border-radius: 24px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; flex-shrink: 0; }
   .chip.selected { color: white; border-color: transparent; }
   .chip[data-cat="食費"].selected { background: #f97316; }
   .chip[data-cat="日用品"].selected { background: #8b5cf6; }
@@ -234,8 +235,9 @@
   .shop-chip:hover { background: #667eea; color: white; border-color: #667eea; }
 
   /* Payment chips */
-  .payment-chips { display: flex; flex-wrap: wrap; gap: 10px; }
-  .pchip { padding: 10px 20px; border-radius: 24px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; }
+  .payment-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .payment-chips::-webkit-scrollbar { display: none; }
+  .pchip { padding: 10px 20px; border-radius: 24px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; flex-shrink: 0; }
   .pchip.selected { color: white; border-color: transparent; }
   .pchip[data-pay="現金"].selected { background: #22c55e; }
   .pchip[data-pay="クレジット"].selected { background: #3b82f6; }
