@@ -575,8 +575,16 @@
 
 <script>
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
-document.body.style.border='8px solid red';
-document.title='TEST-OK';
+(function(){
+  var key = location.hash.replace('#','');
+  if(!key || key.length < 16){
+    var arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    history.replaceState(null,'',location.pathname+'#'+key);
+  }
+  window._userKey = key;
+})();
 
 function initUserKey(){ return window._userKey; }
 
