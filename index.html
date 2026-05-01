@@ -577,18 +577,21 @@
 <script>
 // ─── ログイン関数（最初に定義）───────────────────────
 function doGoogleLogin(){
-  alert('タップ検知！ログイン処理開始...');
+  const sub=document.querySelector('.lock-subtitle');
+  const btn=document.getElementById('googleLoginBtn');
+  sub.textContent='⏳ ログイン中...';
+  sub.style.color='yellow';
   try{
-    if(typeof firebase==='undefined'){alert('🔴 Firebase未読み込み');return;}
+    if(typeof firebase==='undefined'){sub.textContent='🔴 Firebase未読み込み';return;}
+    if(typeof auth==='undefined'){sub.textContent='🔴 auth未定義';return;}
     const provider=new firebase.auth.GoogleAuthProvider();
-    const btn=document.getElementById('googleLoginBtn');
     btn.textContent='⏳ ログイン中...'; btn.disabled=true;
     auth.signInWithRedirect(provider).catch(err=>{
       btn.disabled=false; btn.textContent='Googleでログイン';
-      alert('🔴 エラー: '+err.code+'\n'+err.message);
+      sub.textContent='🔴 '+err.code;
     });
   }catch(e){
-    alert('🔴 例外: '+e.message);
+    sub.textContent='🔴 例外: '+e.message;
   }
 }
 
