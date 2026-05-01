@@ -687,12 +687,20 @@ auth.onAuthStateChanged(user=>{
     ls.style.display='flex'; ls.style.opacity='1';
   }
 });
+// リダイレクト後の結果を処理（モバイル対応）
+auth.getRedirectResult().catch(err=>console.error('redirect error:',err));
+
 document.getElementById('googleLoginBtn').addEventListener('click',()=>{
   const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err=>{
-    console.error(err);
-    alert('ログインに失敗しました: '+err.message);
-  });
+  const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile){
+    auth.signInWithRedirect(provider);
+  } else {
+    auth.signInWithPopup(provider).catch(err=>{
+      console.error(err);
+      alert('ログインに失敗しました: '+err.message);
+    });
+  }
 });
 
 // 支出/入金トグル
