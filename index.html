@@ -575,22 +575,8 @@
 
 <script>
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
-(function(){
-  var key = location.hash.replace('#','');
-  if(!key || key.length < 16){
-    var arr = new Uint8Array(16);
-    crypto.getRandomValues(arr);
-    key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-    history.replaceState(null,'',location.pathname+'#'+key);
-  }
-  window._userKey = key;
-  document.title = 'KEY:'+key.slice(0,6);
-  var b=document.createElement('div');
-  b.id='debugBanner';
-  b.style.cssText='position:fixed;top:0;left:0;right:0;background:#22c55e;color:white;text-align:center;padding:10px;font-size:15px;font-weight:bold;z-index:99999';
-  b.textContent='✅ JS動作中 URL末尾のKEY:'+key.slice(0,8)+'...';
-  document.body.appendChild(b);
-})();
+document.body.style.border='8px solid red';
+document.title='TEST-OK';
 
 function initUserKey(){ return window._userKey; }
 
@@ -800,14 +786,6 @@ function showOcrResult(data){
     ?data.items.map(i=>`<div class="ocr-item-row"><span class="ocr-item-name">${i.name}</span><span class="ocr-item-price">${i.price?fmt(i.price):'—'}</span></div>`).join('')
     :'<div style="color:#bbb;font-size:0.82rem;padding:4px 0">品目を取得できませんでした</div>';
 }
-const CAT_LIST=[
-  {key:'食費',icon:'🍱',color:'#f97316'},{key:'日用品',icon:'🧴',color:'#8b5cf6'},
-  {key:'交通費',icon:'🚃',color:'#3b82f6'},{key:'医療',icon:'💊',color:'#ef4444'},
-  {key:'娯楽',icon:'🎮',color:'#ec4899'},{key:'その他',icon:'📦',color:'#6b7280'}
-];
-const PAY_LIST=[
-  {key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}
-];
 function selectCategory(cat){
   selectedCategory=cat;
   const c=CAT_LIST.find(x=>x.key===cat);
