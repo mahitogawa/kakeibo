@@ -574,18 +574,20 @@
 </div>
 
 <script>
-// ─── 秘密URL方式の初期化 ─────────────────────────────
-function initUserKey(){
+// ─── 秘密URL方式の初期化（最初に実行）─────────────────
+(function(){
   let key = location.hash.replace('#','');
   if(!key || key.length < 16){
-    // 新規: ランダムキーを生成してURLに反映
     const arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
     key = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
     location.hash = key;
   }
-  return key;
-}
+  window._userKey = key;
+  document.title = '🐱 にゃんログ家計簿';
+})();
+
+function initUserKey(){ return window._userKey; }
 
 // ─── 🔄ボタン ────────────────────────────────────────
 document.getElementById('reloadBtn').addEventListener('click', () => {
