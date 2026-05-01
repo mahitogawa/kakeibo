@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>🐱 にゃんログ家計簿</title>
 
 <!-- PWA -->
@@ -14,6 +14,10 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <style>
   :root {
     color-scheme: light;
@@ -121,8 +125,8 @@
   .ocr-total-amount { font-size: 1.5rem; font-weight: 700; color: #667eea; }
 
   /* Form */
-  .form-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-  .form-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: #333; }
+  .form-card { background: white; border-radius: 16px; padding: 18px 16px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .form-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: #333; }
   .form-group { margin-bottom: 16px; }
   .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 8px; }
   .form-group input, .form-group select, .form-group textarea {
@@ -200,22 +204,35 @@
   .backup-toast .toast-close { margin-left: auto; opacity: 0.6; font-size: 1.1rem; }
   @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
 
-  /* ロック画面 */
+  /* ログイン画面 */
   .lock-screen {
     position: fixed; inset: 0; z-index: 9000;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; user-select: none;
+    user-select: none; gap: 0;
   }
-  .lock-screen .lock-icon { font-size: 5rem; margin-bottom: 20px; animation: pulse 2s infinite; }
-  .lock-screen .lock-title { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 10px; }
-  .lock-screen .lock-hint { font-size: 1rem; color: rgba(255,255,255,0.7); margin-top: 40px; }
+  .lock-screen .lock-icon { font-size: 5rem; margin-bottom: 16px; animation: pulse 2s infinite; }
+  .lock-screen .lock-title { font-size: 1.6rem; font-weight: 700; color: white; margin-bottom: 8px; }
+  .lock-screen .lock-subtitle { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 48px; }
+  .google-login-btn {
+    display: flex; align-items: center; gap: 12px;
+    background: white; color: #333; border: none; border-radius: 14px;
+    padding: 16px 28px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: all 0.2s; font-family: var(--font);
+  }
+  .google-login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .google-login-btn:active { transform: translateY(0); }
   @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
 
   /* Modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 24px 24px 0 0; padding: 26px 20px 36px; width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+  .modal {
+    background: white; border-radius: 24px 24px 0 0;
+    padding: 26px 20px; padding-bottom: max(36px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+  }
   .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
   .modal p { font-size: 0.95rem; color: #666; margin-bottom: 18px; }
   .modal-shop-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
@@ -278,7 +295,11 @@
   /* ボトムシート */
   .picker-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: flex-end; justify-content: center; }
   .picker-overlay.open { display: flex; }
-  .picker-sheet { background: white; border-radius: 24px 24px 0 0; width: 100%; max-width: 600px; max-height: 78vh; overflow-y: auto; padding-bottom: 40px; }
+  .picker-sheet {
+    background: white; border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 600px; max-height: 75vh; overflow-y: auto;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
   .picker-handle { width: 44px; height: 5px; background: #ddd; border-radius: 3px; margin: 14px auto 0; }
   .picker-sheet-title { padding: 16px 20px 12px; font-size: 1rem; font-weight: 700; color: #333; border-bottom: 1px solid #f0f0f5; }
   .picker-option { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f5f5fa; cursor: pointer; gap: 14px; transition: background 0.12s; }
@@ -315,11 +336,20 @@
 </head>
 <body>
 
-<!-- ロック画面 -->
+<!-- ログイン画面 -->
 <div class="lock-screen" id="lockScreen">
   <div class="lock-icon">🐱</div>
   <div class="lock-title">にゃんログ家計簿</div>
-  <div class="lock-hint">タップして開く</div>
+  <div class="lock-subtitle">どのブラウザからでも同じデータが使えます</div>
+  <button class="google-login-btn" id="googleLoginBtn">
+    <svg width="20" height="20" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    Googleでログイン
+  </button>
 </div>
 
 <div class="header">
@@ -545,19 +575,14 @@
 </div>
 
 <script>
-// 🔄ボタン: SWの更新チェック → リロード
+// ─── 🔄ボタン ────────────────────────────────────────
 document.getElementById('reloadBtn').addEventListener('click', () => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) {
-        reg.update().finally(() => location.reload(true));
-      } else {
-        location.reload(true);
-      }
+      if (reg) reg.update().finally(() => location.reload(true));
+      else location.reload(true);
     }).catch(() => location.reload(true));
-  } else {
-    location.reload(true);
-  }
+  } else { location.reload(true); }
 });
 
 // タブのsticky位置をheaderの高さに合わせる
@@ -569,17 +594,71 @@ function syncTabsTop(){
 window.addEventListener('load', syncTabsTop);
 window.addEventListener('resize', syncTabsTop);
 
-const CAT_ICONS = {'食費':'🍱','日用品':'🧴','交通費':'🚃','医療':'💊','娯楽':'🎮','その他':'📦'};
+// ─── Firebase 初期化 ──────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBxev6yBDCRSSRN6u4w8sS2KY-43hLmX9I",
+  authDomain: "nyanlog-1fc74.firebaseapp.com",
+  projectId: "nyanlog-1fc74",
+  storageBucket: "nyanlog-1fc74.firebasestorage.app",
+  messagingSenderId: "640718968912",
+  appId: "1:640718968912:web:2da938f3749997be909955"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ─── 定数 ────────────────────────────────────────────
+const CAT_ICONS  = {'食費':'🍱','日用品':'🧴','交通費':'🚃','医療':'💊','娯楽':'🎮','その他':'📦'};
 const CAT_COLORS = {'食費':'#f97316','日用品':'#8b5cf6','交通費':'#3b82f6','医療':'#ef4444','娯楽':'#ec4899','その他':'#6b7280'};
-const PAY_ICONS = {'現金':'💵','クレジット':'💳','その他':'🏷'};
-let entries = JSON.parse(localStorage.getItem('kakeibo_v2')||'[]');
-let shops = JSON.parse(localStorage.getItem('kakeibo_shops')||'[]');
-let selectedCategory='', selectedPayment='', selectedType='支出', currentHistMonth=new Date(), currentSumMonth=new Date(), selectedEntryId=null, editingEntryId=null, pieChartInstance=null;
-function save(){localStorage.setItem('kakeibo_v2',JSON.stringify(entries));}
-function saveShops(){localStorage.setItem('kakeibo_shops',JSON.stringify(shops));}
+const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
+const CAT_LIST   = [
+  {key:'食費',icon:'🍱',color:'#f97316'},{key:'日用品',icon:'🧴',color:'#8b5cf6'},
+  {key:'交通費',icon:'🚃',color:'#3b82f6'},{key:'医療',icon:'💊',color:'#ef4444'},
+  {key:'娯楽',icon:'🎮',color:'#ec4899'},{key:'その他',icon:'📦',color:'#6b7280'}
+];
+const PAY_LIST = [{key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}];
+
+// ─── 状態変数 ─────────────────────────────────────────
+let entries=[], shops=[], currentUser=null;
+let unsubEntries=null, unsubShops=null;
+let selectedCategory='', selectedPayment='', selectedType='支出';
+let currentHistMonth=new Date(), currentSumMonth=new Date();
+let selectedEntryId=null, editingEntryId=null, pieChartInstance=null;
+
+// ─── ユーティリティ ───────────────────────────────────
 function fmt(n){return '¥'+Number(n||0).toLocaleString('ja-JP');}
 function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function monthLabel(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月';}
+
+// ─── Firestore 操作 ───────────────────────────────────
+function userRef(){ return db.collection('users').doc(currentUser.uid); }
+async function saveEntry(data,id){ const c=userRef().collection('entries'); return id?c.doc(id).set(data,{merge:true}):c.add(data); }
+async function deleteEntry(id){ await userRef().collection('entries').doc(id).delete(); }
+async function saveShop(data,id){ const c=userRef().collection('shops'); return id?c.doc(id).set(data):c.add(data); }
+async function deleteShop(id){ await userRef().collection('shops').doc(id).delete(); }
+
+// ─── Firestoreリスナー ────────────────────────────────
+function subscribeData(){
+  unsubEntries=userRef().collection('entries').orderBy('date','desc').onSnapshot(snap=>{
+    entries=snap.docs.map(d=>({...d.data(),id:d.id}));
+    updateHeader(); renderCurrentTab();
+  });
+  unsubShops=userRef().collection('shops').onSnapshot(snap=>{
+    shops=snap.docs.map(d=>({...d.data(),id:d.id}));
+  });
+}
+function unsubscribeData(){
+  if(unsubEntries){unsubEntries();unsubEntries=null;}
+  if(unsubShops){unsubShops();unsubShops=null;}
+}
+function renderCurrentTab(){
+  const t=document.querySelector('.tab.active');
+  if(!t)return;
+  if(t.dataset.tab==='history')renderHistory();
+  if(t.dataset.tab==='summary')renderSummary();
+  if(t.dataset.tab==='settings')renderSettings();
+}
+// ─── ヘッダー更新 ─────────────────────────────────────
 function updateHeader(){
   const mk=monthKey(new Date());
   const monthEntries=entries.filter(e=>e.date&&e.date.startsWith(mk));
@@ -592,6 +671,30 @@ function updateHeader(){
   balEl.textContent=fmt(Math.abs(balance));
   balEl.style.color=balance<0?'#fca5a5':'#bbf7d0';
 }
+
+// ─── 認証 ────────────────────────────────────────────
+auth.onAuthStateChanged(user=>{
+  const ls=document.getElementById('lockScreen');
+  if(user){
+    currentUser=user;
+    ls.style.opacity='0'; ls.style.transition='opacity 0.4s';
+    setTimeout(()=>ls.style.display='none',400);
+    subscribeData();
+  } else {
+    currentUser=null;
+    unsubscribeData();
+    entries=[]; shops=[];
+    ls.style.display='flex'; ls.style.opacity='1';
+  }
+});
+document.getElementById('googleLoginBtn').addEventListener('click',()=>{
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err=>{
+    console.error(err);
+    alert('ログインに失敗しました: '+err.message);
+  });
+});
+
 // 支出/入金トグル
 document.querySelectorAll('.type-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -752,31 +855,24 @@ document.getElementById('shopPickerBtn').addEventListener('click',()=>openPicker
 document.getElementById('pickerOverlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('pickerOverlay'))document.getElementById('pickerOverlay').classList.remove('open');
 });
-document.getElementById('saveBtn').addEventListener('click',()=>{
+document.getElementById('saveBtn').addEventListener('click',async()=>{
+  if(!currentUser){alert('ログインしてください');return;}
   const date=document.getElementById('fDate').value;
   const shop=document.getElementById('fShop').value.trim();
   const amount=parseInt(document.getElementById('fAmount').value)||0;
   const items=document.getElementById('fItems').value.trim();
   if(!date){alert('日付を入力してください');return;}
   if(!shop){alert('購入先を入力してください');return;}
-  if(!selectedCategory){alert('カテゴリを選択してください');return;}
+  if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
   if(!amount){alert('金額を入力してください');return;}
-  if(editingEntryId){
-    // 編集モード：既存エントリを更新
-    const idx = entries.findIndex(e=>e.id===editingEntryId);
-    if(idx!==-1) entries[idx]={...entries[idx],date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金'};
-    editingEntryId=null;
-  } else {
-    entries.push({id:Date.now(),date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'});
+  const data={date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
+  await saveEntry(data, editingEntryId||null);
+  // 未登録の店名なら自動追加
+  if(shop&&!shops.find(s=>s.name===shop)){
+    await saveShop({name:shop,cat:selectedCategory||'その他'},null);
   }
-  entries.sort((a,b)=>b.date.localeCompare(a.date));
-  // 未登録の店名なら設定に自動追加
-  if(shop && !shops.find(s=>s.name===shop)){
-    shops.push({name:shop, cat:selectedCategory||'その他'});
-    saveShops(); renderShopChips();
-  }
-  save();updateHeader();resetForm();
-  spawnPaws();
+  editingEntryId=null;
+  resetForm(); spawnPaws();
   const btn=document.getElementById('saveBtn');
   btn.textContent='✅ 保存しました！';btn.style.background='#22c55e';
   setTimeout(()=>{btn.textContent='✅ 保存する';btn.style.background='';},1500);
@@ -827,7 +923,7 @@ function renderHistory(){
     }).join('');
     return `<div class="entry-group"><div class="entry-group-date">${label}</div>${items}</div>`;
   }).join('');
-  list.querySelectorAll('.entry-item').forEach(el=>{el.addEventListener('click',()=>openModal(parseInt(el.dataset.id)));});
+  list.querySelectorAll('.entry-item').forEach(el=>{el.addEventListener('click',()=>openModal(el.dataset.id));});
 }
 document.getElementById('histPrev').addEventListener('click',()=>{currentHistMonth=new Date(currentHistMonth.getFullYear(),currentHistMonth.getMonth()-1,1);renderHistory();});
 document.getElementById('histNext').addEventListener('click',()=>{currentHistMonth=new Date(currentHistMonth.getFullYear(),currentHistMonth.getMonth()+1,1);renderHistory();});
@@ -845,9 +941,10 @@ function openModal(id){
 }
 document.getElementById('closeModalBtn').addEventListener('click',()=>document.getElementById('modalOverlay').classList.remove('open'));
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))document.getElementById('modalOverlay').classList.remove('open');});
-document.getElementById('deleteBtn').addEventListener('click',()=>{
-  entries=entries.filter(e=>e.id!==selectedEntryId);
-  save();updateHeader();document.getElementById('modalOverlay').classList.remove('open');renderHistory();
+document.getElementById('deleteBtn').addEventListener('click',async()=>{
+  if(!confirm('削除しますか？'))return;
+  await deleteEntry(selectedEntryId);
+  document.getElementById('modalOverlay').classList.remove('open');
 });
 document.getElementById('editBtn').addEventListener('click',()=>{
   const e=entries.find(x=>x.id===selectedEntryId); if(!e) return;
@@ -907,22 +1004,22 @@ function renderSettings(){
   document.getElementById('entriesCount').textContent=entries.length+'件';
   const list=document.getElementById('shopList');
   if(shops.length===0){list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">まだ登録がありません</div>';return;}
-  list.innerHTML=shops.map((s,i)=>`
+  list.innerHTML=shops.map(s=>`
     <div class="settings-row">
       <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
       <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
-      <button class="btn-del" data-idx="${i}">🗑</button>
+      <button class="btn-del" data-id="${s.id}">🗑</button>
     </div>`).join('');
   list.querySelectorAll('.btn-del').forEach(btn=>{
-    btn.addEventListener('click',()=>{shops.splice(parseInt(btn.dataset.idx),1);saveShops();renderSettings();renderShopChips();});
+    btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
   });
 }
-document.getElementById('addShopBtn').addEventListener('click',()=>{
+document.getElementById('addShopBtn').addEventListener('click',async()=>{
   const name=document.getElementById('newShopName').value.trim();
   const cat=document.getElementById('newShopCat').value;
   if(!name){alert('店名を入力してください');return;}
   if(shops.find(s=>s.name===name)){alert('すでに登録されています');return;}
-  shops.push({name,cat});saveShops();renderSettings();renderShopChips();
+  await saveShop({name,cat},null);
   document.getElementById('newShopName').value='';
   const btn=document.getElementById('addShopBtn');
   btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
@@ -937,10 +1034,12 @@ document.getElementById('resetFormBtn').addEventListener('click',()=>{
   document.querySelector('.tab[data-tab="input"]').classList.add('active');
   document.getElementById('tab-input').classList.add('active');
 });
-document.getElementById('clearAllBtn').addEventListener('click',()=>{
+document.getElementById('clearAllBtn').addEventListener('click',async()=>{
   if(!confirm('全データを削除しますか？元に戻せません。'))return;
-  entries=[];save();updateHeader();renderSettings();
-  if(document.querySelector('.tab[data-tab="history"]').classList.contains('active'))renderHistory();
+  const snap=await userRef().collection('entries').get();
+  const batch=db.batch();
+  snap.docs.forEach(d=>batch.delete(d.ref));
+  await batch.commit();
 });
 // 足跡アニメーション
 function spawnPaws(){
@@ -969,32 +1068,36 @@ fAmountEl.addEventListener('input', () => {
 });
 
 document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-renderShopChips();updateHeader();
 
-// バックアップ・復元
+// ─── バックアップ・復元 ───────────────────────────────
 document.getElementById('exportBtn').addEventListener('click',()=>{
   const data={entries,shops,exportDate:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  const date=new Date().toISOString().split('T')[0];
-  a.href=url; a.download=`nyanlog_backup_${date}.json`;
+  a.href=url; a.download=`nyanlog_backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click(); URL.revokeObjectURL(url);
-  localStorage.setItem('nyanlog_last_backup', Date.now());
 });
 document.getElementById('importBtn').addEventListener('click',()=>{
-  if(!confirm('現在のデータに上書きされます。よいですか？'))return;
+  if(!confirm('バックアップデータを追加読み込みします。よいですか？'))return;
   document.getElementById('importFile').click();
 });
-document.getElementById('importFile').addEventListener('change',e=>{
+document.getElementById('importFile').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file)return;
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=async ev=>{
     try{
       const data=JSON.parse(ev.target.result);
-      if(data.entries){entries=data.entries;save();}
-      if(data.shops){shops=data.shops;saveShops();}
-      updateHeader();renderSettings();
+      const batch=db.batch();
+      if(data.entries) data.entries.forEach(entry=>{
+        const {id,...rest}=entry;
+        batch.set(userRef().collection('entries').doc(),rest);
+      });
+      if(data.shops) data.shops.forEach(shop=>{
+        const {id,...rest}=shop;
+        batch.set(userRef().collection('shops').doc(),rest);
+      });
+      await batch.commit();
       alert('✅ 復元しました！');
     }catch(err){alert('❌ ファイルが正しくありません');}
     e.target.value='';
@@ -1002,37 +1105,7 @@ document.getElementById('importFile').addEventListener('change',e=>{
   reader.readAsText(file);
 });
 
-// バックアップリマインダー
-function checkBackupReminder(){
-  if(entries.length===0) return;
-  const last = parseInt(localStorage.getItem('nyanlog_last_backup')||'0');
-  const days = Math.floor((Date.now()-last)/(1000*60*60*24));
-  if(days<7) return;
-  const msg = last===0 ? 'まだバックアップしてないにゃ🐾' : `${days}日間バックアップしてないにゃ🐾`;
-  const toast = document.createElement('div');
-  toast.className='backup-toast';
-  toast.innerHTML=`<span>💾 ${msg}</span><span class="toast-close">✕</span>`;
-  toast.addEventListener('click',e=>{
-    if(e.target.classList.contains('toast-close')||e.target===toast) toast.remove();
-    else {
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-      document.querySelector('.tab[data-tab="settings"]').classList.add('active');
-      document.getElementById('tab-settings').classList.add('active');
-      renderSettings(); toast.remove();
-    }
-  });
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(), 8000);
-}
-setTimeout(checkBackupReminder, 2000);
-
-// ロック画面
-document.getElementById('lockScreen').addEventListener('click', function(){
-  this.style.opacity='0';
-  this.style.transition='opacity 0.4s';
-  setTimeout(()=>this.style.display='none', 400);
-});
+// Firestoreはクラウド保存なのでバックアップリマインダー不要
 
 // Service Worker 登録
 if('serviceWorker' in navigator){
