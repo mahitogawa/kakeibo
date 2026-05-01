@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>家計簿</title>
+<title>🐱 にゃんログ家計簿</title>
 
 <!-- PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,10 +27,19 @@
     color: white; padding: 20px 16px 16px; text-align: center;
     position: sticky; top: 0; z-index: 100;
     box-shadow: 0 2px 12px rgba(102,126,234,0.3);
+    position: relative;
   }
   .header h1 { font-size: 1.6rem; font-weight: 700; }
   .header .month-total { font-size: 0.95rem; opacity: 0.9; margin-top: 4px; }
   .header .total-amount { font-size: 2.2rem; font-weight: 700; margin-top: 2px; }
+  .reload-btn {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
+    width: 42px; height: 42px; font-size: 1.3rem; color: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .reload-btn:active { background: rgba(255,255,255,0.4); transform: rotate(180deg); transition: transform 0.4s; }
   .tabs {
     display: flex; background: white;
     border-bottom: 2px solid #eef0f5;
@@ -113,6 +122,9 @@
     border-radius: 12px; font-size: 1.1rem; font-family: inherit;
     color: #1a1a2e; background: #fafafa; transition: border-color 0.2s; outline: none;
   }
+  .form-group input[type="date"] {
+    font-size: 1.3rem; padding: 16px 14px; min-height: 58px;
+  }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: white; }
   .form-group textarea { resize: none; height: 80px; }
   .category-chips { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -181,29 +193,34 @@
   .modal-total-row { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 1.2rem; font-weight: 700; }
   .btn-edit { background: #eff6ff; color: #2563eb; font-weight: 700; margin-bottom: 10px; }
   .btn-danger { background: #fee2e2; color: #dc2626; font-weight: 700; }
+  /* 足跡アニメーション */
+  .paw-burst { position: fixed; pointer-events: none; z-index: 9999; font-size: 2rem; animation: pawFly 1.2s ease-out forwards; }
+  @keyframes pawFly {
+    0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    60%  { opacity: 0.8; transform: translateY(-120px) scale(1.4) rotate(20deg); }
+    100% { opacity: 0; transform: translateY(-200px) scale(0.6) rotate(-10deg); }
+  }
+
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Amount Hero */
+  /* Amount Hero — 1行 */
   .amount-hero-card {
-    background: white; border-radius: 20px; padding: 22px 20px 20px;
+    display: flex; align-items: center; gap: 12px;
+    background: white; border-radius: 16px; padding: 14px 18px;
     margin-bottom: 16px; box-shadow: 0 4px 20px rgba(102,126,234,0.15);
-    border: 2.5px solid #c5cae9; text-align: center;
+    border: 2.5px solid #c5cae9;
   }
   .amount-hero-label {
-    font-size: 1rem; font-weight: 700; color: #667eea;
-    letter-spacing: 0.06em; margin-bottom: 10px;
+    font-size: 0.95rem; font-weight: 700; color: #667eea;
+    white-space: nowrap; flex-shrink: 0;
   }
-  .amount-hero-display {
-    font-size: 3.2rem; font-weight: 700; color: #1a1a2e;
-    letter-spacing: -0.02em; margin-bottom: 14px; min-height: 56px;
-    background: #f5f5ff; border-radius: 14px; padding: 10px 16px;
-  }
+  .amount-hero-display { display: none; }
   .amount-hero-input {
-    width: 100%; padding: 18px 16px; border: 3px solid #667eea;
-    border-radius: 14px; font-size: 2rem; font-weight: 700;
+    flex: 1; padding: 12px 14px; border: 2.5px solid #667eea;
+    border-radius: 12px; font-size: 1.8rem; font-weight: 700;
     font-family: inherit; color: #1a1a2e; background: white;
-    text-align: center; outline: none; letter-spacing: 0.04em;
+    text-align: right; outline: none; min-width: 0;
     transition: border-color 0.2s; -moz-appearance: textfield;
   }
   .amount-hero-input:focus { border-color: #764ba2; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
@@ -247,9 +264,10 @@
 <body>
 
 <div class="header">
-  <h1>🏠 家計簿</h1>
+  <h1>🐱 にゃんログ家計簿</h1>
   <div class="month-total" id="headerMonth"></div>
   <div class="total-amount" id="headerTotal">¥0</div>
+  <button class="reload-btn" onclick="location.reload()" title="更新">🔄</button>
 </div>
 
 <div class="tabs">
@@ -341,7 +359,6 @@
         </div>
       </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
-      <button class="btn btn-secondary" id="resetBtn">🔄 リセット</button>
     </div>
   </div>
 </div>
@@ -404,6 +421,11 @@
       <div class="settings-row">
         <div class="settings-row-icon">📊</div>
         <div style="flex:1"><div class="settings-row-name">登録件数</div><div class="settings-row-cat" id="entriesCount">0件</div></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">🔄</div>
+        <div style="flex:1"><div class="settings-row-name">入力フォームをリセット</div><div class="settings-row-cat">入力中の内容をクリア</div></div>
+        <button class="btn-del" id="resetFormBtn" style="font-size:0.78rem;color:#667eea;border:1.5px solid #c5cae9;border-radius:8px;padding:6px 10px;background:#f0f0ff">リセット</button>
       </div>
       <div class="settings-row">
         <div class="settings-row-icon">🗑</div>
@@ -536,11 +558,12 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   }
   entries.sort((a,b)=>b.date.localeCompare(a.date));
   save();updateHeader();resetForm();
+  spawnPaws();
   const btn=document.getElementById('saveBtn');
   btn.textContent='✅ 保存しました！';btn.style.background='#22c55e';
   setTimeout(()=>{btn.textContent='✅ 保存する';btn.style.background='';},1500);
 });
-document.getElementById('resetBtn').addEventListener('click',resetForm);
+// リセットは設定画面から（後述）
 function resetForm(){
   editingEntryId=null;
   const saveBtn=document.getElementById('saveBtn');
@@ -689,11 +712,38 @@ document.getElementById('addShopBtn').addEventListener('click',()=>{
   btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
   setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
 });
+document.getElementById('resetFormBtn').addEventListener('click',()=>{
+  if(!confirm('入力フォームの内容をリセットしますか？'))return;
+  resetForm();
+  // 入力タブへ移動
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.tab[data-tab="input"]').classList.add('active');
+  document.getElementById('tab-input').classList.add('active');
+});
 document.getElementById('clearAllBtn').addEventListener('click',()=>{
   if(!confirm('全データを削除しますか？元に戻せません。'))return;
   entries=[];save();updateHeader();renderSettings();
   if(document.querySelector('.tab[data-tab="history"]').classList.contains('active'))renderHistory();
 });
+// 足跡アニメーション
+function spawnPaws(){
+  const count = 6;
+  for(let i=0;i<count;i++){
+    setTimeout(()=>{
+      const el = document.createElement('div');
+      el.className = 'paw-burst';
+      el.textContent = '🐾';
+      el.style.left = (20 + Math.random()*60) + 'vw';
+      el.style.top  = (40 + Math.random()*30) + 'vh';
+      el.style.animationDelay = (Math.random()*0.3)+'s';
+      el.style.fontSize = (1.4 + Math.random()*1.2) + 'rem';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 1400);
+    }, i*120);
+  }
+}
+
 // 金額表示の連動
 const fAmountEl = document.getElementById('fAmount');
 const amountDisplayEl = document.getElementById('amountDisplay');
