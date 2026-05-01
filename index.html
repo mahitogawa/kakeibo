@@ -1124,11 +1124,12 @@ document.getElementById('importFile').addEventListener('change',async e=>{
 
 // Firestoreはクラウド保存なのでバックアップリマインダー不要
 
-// Service Worker 登録
+// ─── Service Worker 全解除（キャッシュ問題対策）───────────
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>{ console.log('SW unregistered:',r.scope); r.unregister(); });
   });
+  caches.keys().then(keys=>keys.forEach(k=>{ console.log('Cache deleted:',k); caches.delete(k); }));
 }
 </script>
 </body>
