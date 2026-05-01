@@ -366,11 +366,11 @@
       </div>
       <div class="form-group">
         <label>購入先（店名）</label>
-        <div class="shop-quick" id="shopQuick">
-          <div class="shop-quick-label">⭐ よく使うお店</div>
-          <div class="shop-chips" id="shopChips"></div>
-        </div>
-        <input type="text" id="fShop" placeholder="例：ファミリーマート…">
+        <button type="button" class="picker-btn" id="shopPickerBtn">
+          <span id="shopPickerVal">⭐ 登録店から選ぶ</span>
+          <span class="picker-arrow">›</span>
+        </button>
+        <input type="text" id="fShop" placeholder="直接入力…" style="margin-top:8px">
       </div>
       <div class="form-group">
         <label>品目・メモ（自由記入）</label>
@@ -378,22 +378,17 @@
       </div>
       <div class="form-group" id="categoryGroup">
         <label>カテゴリ</label>
-        <div class="category-chips">
-          <div class="chip" data-cat="食費">🍱 食費</div>
-          <div class="chip" data-cat="日用品">🧴 日用品</div>
-          <div class="chip" data-cat="交通費">🚃 交通費</div>
-          <div class="chip" data-cat="医療">💊 医療</div>
-          <div class="chip" data-cat="娯楽">🎮 娯楽</div>
-          <div class="chip" data-cat="その他">📦 その他</div>
-        </div>
+        <button type="button" class="picker-btn" id="catPickerBtn">
+          <span id="catPickerVal">📂 タップして選択</span>
+          <span class="picker-arrow">›</span>
+        </button>
       </div>
       <div class="form-group">
         <label>支払い方法</label>
-        <div class="payment-chips">
-          <div class="pchip" data-pay="現金">💵 現金</div>
-          <div class="pchip" data-pay="クレジット">💳 クレジット</div>
-          <div class="pchip" data-pay="その他">🏷 その他</div>
-        </div>
+        <button type="button" class="picker-btn has-val" id="payPickerBtn">
+          <span id="payPickerVal">💵 現金</span>
+          <span class="picker-arrow">›</span>
+        </button>
       </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
     </div>
@@ -470,6 +465,15 @@
         <button class="btn-del" id="clearAllBtn" style="font-size:0.78rem;color:#ef4444;border:1.5px solid #fca5a5;border-radius:8px;padding:6px 10px;background:#fff1f1">削除</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ボトムシート（ピッカー） -->
+<div class="picker-overlay" id="pickerOverlay">
+  <div class="picker-sheet">
+    <div class="picker-handle"></div>
+    <div class="picker-sheet-title" id="pickerTitle">選択してください</div>
+    <div id="pickerOptions"></div>
   </div>
 </div>
 
@@ -591,17 +595,84 @@ function showOcrResult(data){
     ?data.items.map(i=>`<div class="ocr-item-row"><span class="ocr-item-name">${i.name}</span><span class="ocr-item-price">${i.price?fmt(i.price):'—'}</span></div>`).join('')
     :'<div style="color:#bbb;font-size:0.82rem;padding:4px 0">品目を取得できませんでした</div>';
 }
+const CAT_LIST=[
+  {key:'食費',icon:'🍱',color:'#f97316'},{key:'日用品',icon:'🧴',color:'#8b5cf6'},
+  {key:'交通費',icon:'🚃',color:'#3b82f6'},{key:'医療',icon:'💊',color:'#ef4444'},
+  {key:'娯楽',icon:'🎮',color:'#ec4899'},{key:'その他',icon:'📦',color:'#6b7280'}
+];
+const PAY_LIST=[
+  {key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}
+];
 function selectCategory(cat){
   selectedCategory=cat;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('selected',c.dataset.cat===cat));
+  const c=CAT_LIST.find(x=>x.key===cat);
+  const btn=document.getElementById('catPickerBtn');
+  document.getElementById('catPickerVal').textContent=(c?c.icon+' ':'')+cat;
+  btn.classList.add('has-val');
 }
-document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>selectCategory(c.dataset.cat)));
 function selectPayment(pay){
   selectedPayment=pay;
-  document.querySelectorAll('.pchip').forEach(c=>c.classList.toggle('selected',c.dataset.pay===pay));
+  const p=PAY_LIST.find(x=>x.key===pay);
+  document.getElementById('payPickerVal').textContent=(p?p.icon+' ':'')+pay;
+  document.getElementById('payPickerBtn').classList.add('has-val');
 }
-document.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>selectPayment(c.dataset.pay)));
-selectPayment('現金'); // デフォルト：現金
+selectPayment('現金');
+
+// ボトムシートを開く
+function openPicker(mode){
+  const overlay=document.getElementById('pickerOverlay');
+  const title=document.getElementById('pickerTitle');
+  const opts=document.getElementById('pickerOptions');
+  if(mode==='cat'){
+    title.textContent='カテゴリを選択';
+    opts.innerHTML=CAT_LIST.map(c=>`
+      <div class="picker-option${selectedCategory===c.key?' selected':''}" data-mode="cat" data-val="${c.key}" data-color="${c.color}">
+        <span class="opt-icon">${c.icon}</span>
+        <span class="opt-label">${c.key}</span>
+        <span class="opt-check">✓</span>
+      </div>`).join('');
+  } else if(mode==='pay'){
+    title.textContent='支払い方法を選択';
+    opts.innerHTML=PAY_LIST.map(p=>`
+      <div class="picker-option${selectedPayment===p.key?' selected':''}" data-mode="pay" data-val="${p.key}">
+        <span class="opt-icon">${p.icon}</span>
+        <span class="opt-label">${p.key}</span>
+        <span class="opt-check">✓</span>
+      </div>`).join('');
+  } else if(mode==='shop'){
+    title.textContent='お店を選択';
+    if(shops.length===0){
+      opts.innerHTML='<div style="padding:28px;text-align:center;color:#bbb;font-size:0.95rem">⚙️ 設定タブでお店を登録できます</div>';
+    } else {
+      const cur=document.getElementById('fShop').value;
+      opts.innerHTML=shops.map(s=>`
+        <div class="picker-option${cur===s.name?' selected':''}" data-mode="shop" data-val="${s.name}" data-cat="${s.cat}">
+          <span class="opt-icon">${CAT_ICONS[s.cat]||'🏪'}</span>
+          <span class="opt-label">${s.name}<span class="opt-sub">${s.cat}</span></span>
+          <span class="opt-check">✓</span>
+        </div>`).join('');
+    }
+  }
+  overlay.classList.add('open');
+  opts.querySelectorAll('.picker-option').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const val=el.dataset.val;
+      if(el.dataset.mode==='cat'){ selectCategory(val); }
+      else if(el.dataset.mode==='pay'){ selectPayment(val); }
+      else if(el.dataset.mode==='shop'){
+        document.getElementById('fShop').value=val;
+        if(el.dataset.cat){ selectCategory(el.dataset.cat); }
+      }
+      overlay.classList.remove('open');
+    });
+  });
+}
+document.getElementById('catPickerBtn').addEventListener('click',()=>openPicker('cat'));
+document.getElementById('payPickerBtn').addEventListener('click',()=>openPicker('pay'));
+document.getElementById('shopPickerBtn').addEventListener('click',()=>openPicker('shop'));
+document.getElementById('pickerOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('pickerOverlay'))document.getElementById('pickerOverlay').classList.remove('open');
+});
 document.getElementById('saveBtn').addEventListener('click',()=>{
   const date=document.getElementById('fDate').value;
   const shop=document.getElementById('fShop').value.trim();
@@ -644,7 +715,8 @@ function resetForm(){
   ['fShop','fItems','fAmount'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('catPickerVal').textContent='📂 タップして選択';
+  document.getElementById('catPickerBtn').classList.remove('has-val');
   selectPayment('現金');
   document.getElementById('receiptPreview').classList.remove('visible');
   document.getElementById('ocrResult').classList.remove('visible');
@@ -751,17 +823,7 @@ function renderSummary(){
 }
 document.getElementById('sumPrev').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()-1,1);renderSummary();});
 document.getElementById('sumNext').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()+1,1);renderSummary();});
-function renderShopChips(){
-  const chips=document.getElementById('shopChips');
-  if(shops.length===0){
-    chips.innerHTML='<div class="shop-empty-hint">⚙️ 設定タブでよく使うお店を登録できます</div>';
-    return;
-  }
-  chips.innerHTML=shops.map(s=>`<div class="shop-chip" data-name="${s.name}" data-cat="${s.cat}">${CAT_ICONS[s.cat]||'🏪'} ${s.name}</div>`).join('');
-  chips.querySelectorAll('.shop-chip').forEach(c=>{
-    c.addEventListener('click',()=>{document.getElementById('fShop').value=c.dataset.name;selectCategory(c.dataset.cat);});
-  });
-}
+function renderShopChips(){ /* ピッカーに移行したため不使用 */ }
 function renderSettings(){
   document.getElementById('entriesCount').textContent=entries.length+'件';
   const list=document.getElementById('shopList');
