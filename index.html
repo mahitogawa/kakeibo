@@ -576,15 +576,20 @@
 <script>
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
 (function(){
-  let key = location.hash.replace('#','');
+  var key = location.hash.replace('#','');
   if(!key || key.length < 16){
-    const arr = new Uint8Array(16);
+    var arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
-    key = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
-    location.hash = key;
+    key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    history.replaceState(null,'',location.pathname+'#'+key);
   }
   window._userKey = key;
-  document.title = '🐱 にゃんログ家計簿';
+  document.title = 'KEY:'+key.slice(0,6);
+  var b=document.createElement('div');
+  b.id='debugBanner';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;background:#22c55e;color:white;text-align:center;padding:10px;font-size:15px;font-weight:bold;z-index:99999';
+  b.textContent='✅ JS動作中 URL末尾のKEY:'+key.slice(0,8)+'...';
+  document.body.appendChild(b);
 })();
 
 function initUserKey(){ return window._userKey; }
