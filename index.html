@@ -216,6 +216,15 @@
   .shop-chip { padding: 10px 16px; border-radius: 22px; font-size: 1rem; font-weight: 700; cursor: pointer; background: #f0f0ff; color: #667eea; border: 2px solid #c5cae9; transition: all 0.15s; white-space: nowrap; }
   .shop-chip:hover { background: #667eea; color: white; border-color: #667eea; }
 
+  /* Payment chips */
+  .payment-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pchip { padding: 10px 20px; border-radius: 24px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; }
+  .pchip.selected { color: white; border-color: transparent; }
+  .pchip[data-pay="現金"].selected { background: #22c55e; }
+  .pchip[data-pay="クレジット"].selected { background: #3b82f6; }
+  .pchip[data-pay="その他"].selected { background: #6b7280; }
+  .shop-empty-hint { font-size: 0.9rem; color: #bbb; padding: 6px 4px; }
+
   /* Settings */
   .settings-section { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
   .settings-section-title { padding: 12px 18px; font-size: 0.9rem; font-weight: 700; color: #667eea; background: #f0f0ff; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -301,7 +310,7 @@
       </div>
       <div class="form-group">
         <label>購入先（店名）</label>
-        <div class="shop-quick" id="shopQuick" style="display:none">
+        <div class="shop-quick" id="shopQuick">
           <div class="shop-quick-label">⭐ よく使うお店</div>
           <div class="shop-chips" id="shopChips"></div>
         </div>
@@ -320,6 +329,14 @@
           <div class="chip" data-cat="医療">💊 医療</div>
           <div class="chip" data-cat="娯楽">🎮 娯楽</div>
           <div class="chip" data-cat="その他">📦 その他</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>支払い方法</label>
+        <div class="payment-chips">
+          <div class="pchip" data-pay="現金">💵 現金</div>
+          <div class="pchip" data-pay="クレジット">💳 クレジット</div>
+          <div class="pchip" data-pay="その他">🏷 その他</div>
         </div>
       </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
@@ -410,9 +427,10 @@
 <script>
 const CAT_ICONS = {'食費':'🍱','日用品':'🧴','交通費':'🚃','医療':'💊','娯楽':'🎮','その他':'📦'};
 const CAT_COLORS = {'食費':'#f97316','日用品':'#8b5cf6','交通費':'#3b82f6','医療':'#ef4444','娯楽':'#ec4899','その他':'#6b7280'};
+const PAY_ICONS = {'現金':'💵','クレジット':'💳','その他':'🏷'};
 let entries = JSON.parse(localStorage.getItem('kakeibo_v2')||'[]');
 let shops = JSON.parse(localStorage.getItem('kakeibo_shops')||'[]');
-let selectedCategory='', currentHistMonth=new Date(), currentSumMonth=new Date(), selectedEntryId=null, pieChartInstance=null;
+let selectedCategory='', selectedPayment='', currentHistMonth=new Date(), currentSumMonth=new Date(), selectedEntryId=null, pieChartInstance=null;
 function save(){localStorage.setItem('kakeibo_v2',JSON.stringify(entries));}
 function saveShops(){localStorage.setItem('kakeibo_shops',JSON.stringify(shops));}
 function fmt(n){return '¥'+Number(n||0).toLocaleString('ja-JP');}
@@ -491,6 +509,12 @@ function selectCategory(cat){
   document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('selected',c.dataset.cat===cat));
 }
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>selectCategory(c.dataset.cat)));
+function selectPayment(pay){
+  selectedPayment=pay;
+  document.querySelectorAll('.pchip').forEach(c=>c.classList.toggle('selected',c.dataset.pay===pay));
+}
+document.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>selectPayment(c.dataset.pay)));
+selectPayment('現金'); // デフォルト：現金
 document.getElementById('saveBtn').addEventListener('click',()=>{
   const date=document.getElementById('fDate').value;
   const shop=document.getElementById('fShop').value.trim();
@@ -500,7 +524,7 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   if(!shop){alert('購入先を入力してください');return;}
   if(!selectedCategory){alert('カテゴリを選択してください');return;}
   if(!amount){alert('金額を入力してください');return;}
-  entries.push({id:Date.now(),date,shop,items,category:selectedCategory,amount});
+  entries.push({id:Date.now(),date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金'});
   entries.sort((a,b)=>b.date.localeCompare(a.date));
   save();updateHeader();resetForm();
   const btn=document.getElementById('saveBtn');
@@ -514,6 +538,7 @@ function resetForm(){
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  selectPayment('現金');
   document.getElementById('receiptPreview').classList.remove('visible');
   document.getElementById('ocrResult').classList.remove('visible');
   document.getElementById('receiptImg').src='';fileInput.value='';
@@ -534,7 +559,7 @@ function renderHistory(){
         <div class="cat-dot ${e.category}">${CAT_ICONS[e.category]||'📦'}</div>
         <div class="entry-info">
           <div class="entry-shop">${e.shop}</div>
-          <div class="entry-cat">${e.category}</div>
+          <div class="entry-cat">${e.category}　${PAY_ICONS[e.payment]||'💵'}${e.payment||'現金'}</div>
           ${e.items?`<div class="entry-items-preview">🛍 ${e.items}</div>`:''}
         </div>
         <div class="entry-amount">${fmt(e.amount)}</div>
@@ -551,7 +576,7 @@ function openModal(id){
   document.getElementById('modalContent').innerHTML=`
     <div class="modal-shop-row">
       <div class="modal-shop-icon">${CAT_ICONS[e.category]||'📦'}</div>
-      <div><div class="modal-shop-name">${e.shop}</div><div class="modal-shop-date">${e.date} · ${e.category}</div></div>
+      <div><div class="modal-shop-name">${e.shop}</div><div class="modal-shop-date">${e.date} · ${e.category} · ${PAY_ICONS[e.payment]||'💵'}${e.payment||'現金'}</div></div>
     </div>
     ${e.items?`<div class="modal-section-title">品目・メモ</div><div class="modal-items">${e.items}</div>`:''}
     <div class="modal-total-row"><span>合計</span><span>${fmt(e.amount)}</span></div>`;
@@ -593,10 +618,11 @@ function renderSummary(){
 document.getElementById('sumPrev').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()-1,1);renderSummary();});
 document.getElementById('sumNext').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()+1,1);renderSummary();});
 function renderShopChips(){
-  const quick=document.getElementById('shopQuick');
   const chips=document.getElementById('shopChips');
-  if(shops.length===0){quick.style.display='none';return;}
-  quick.style.display='block';
+  if(shops.length===0){
+    chips.innerHTML='<div class="shop-empty-hint">⚙️ 設定タブでよく使うお店を登録できます</div>';
+    return;
+  }
   chips.innerHTML=shops.map(s=>`<div class="shop-chip" data-name="${s.name}" data-cat="${s.cat}">${CAT_ICONS[s.cat]||'🏪'} ${s.name}</div>`).join('');
   chips.querySelectorAll('.shop-chip').forEach(c=>{
     c.addEventListener('click',()=>{document.getElementById('fShop').value=c.dataset.name;selectCategory(c.dataset.cat);});
