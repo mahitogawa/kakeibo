@@ -336,20 +336,11 @@
 </head>
 <body>
 
-<!-- ログイン画面 -->
-<div class="lock-screen" id="lockScreen">
+<!-- 初回URLセットアップ画面 -->
+<div class="lock-screen" id="lockScreen" style="display:none">
   <div class="lock-icon">🐱</div>
   <div class="lock-title">にゃんログ家計簿</div>
-  <div class="lock-subtitle">どのブラウザからでも同じデータが使えます</div>
-  <button class="google-login-btn" id="googleLoginBtn" onclick="doGoogleLogin()">
-    <svg width="20" height="20" viewBox="0 0 48 48">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-    </svg>
-    Googleでログイン
-  </button>
+  <div class="lock-subtitle" id="lockSubtitle">あなた専用のURLを作成しています...</div>
 </div>
 
 <div class="header">
@@ -534,6 +525,14 @@
       </div>
     </div>
     <div class="settings-section">
+      <div class="settings-section-title">📱 他の端末で使う</div>
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+        <div style="font-size:0.85rem;color:#666">このURLをブックマークすれば、どのブラウザ・どの端末でも同じデータが使えます。</div>
+        <div id="shareUrlBox" style="background:#f0f0ff;border-radius:10px;padding:10px 12px;font-size:0.75rem;word-break:break-all;color:#444;width:100%;cursor:pointer;border:1.5px solid #c5cae9" onclick="copyShareUrl()">読み込み中...</div>
+        <button onclick="copyShareUrl()" style="background:#667eea;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%">📋 URLをコピー</button>
+        <div id="copyDone" style="display:none;color:#22c55e;font-size:0.85rem;font-weight:700">✅ コピーしました！ブックマークに追加してください</div>
+      </div>
+
       <div class="settings-section-title">ℹ️ アプリ情報</div>
       <div class="settings-row">
         <div class="settings-row-icon">📊</div>
@@ -575,27 +574,17 @@
 </div>
 
 <script>
-// ─── ログイン関数（最初に定義）───────────────────────
-function doGoogleLogin(){
-  const sub=document.querySelector('.lock-subtitle');
-  const btn=document.getElementById('googleLoginBtn');
-  sub.textContent='⏳ ログイン中...';
-  sub.style.color='yellow';
-  try{
-    if(typeof firebase==='undefined'){sub.textContent='🔴 Firebase未読み込み';return;}
-    if(typeof auth==='undefined'){sub.textContent='🔴 auth未定義';return;}
-    const provider=new firebase.auth.GoogleAuthProvider();
-    btn.textContent='⏳ ログイン中...'; btn.disabled=true;
-    auth.signInWithPopup(provider).then(()=>{
-      // onAuthStateChanged が処理するので何もしない
-    }).catch(err=>{
-      btn.disabled=false; btn.innerHTML='<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/></svg> Googleでログイン';
-      sub.textContent='🔴 '+err.code;
-      sub.style.color='#fca5a5';
-    });
-  }catch(e){
-    sub.textContent='🔴 例外: '+e.message;
+// ─── 秘密URL方式の初期化 ─────────────────────────────
+function initUserKey(){
+  let key = location.hash.replace('#','');
+  if(!key || key.length < 16){
+    // 新規: ランダムキーを生成してURLに反映
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    key = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+    location.hash = key;
   }
+  return key;
 }
 
 // ─── 🔄ボタン ────────────────────────────────────────
@@ -695,22 +684,27 @@ function updateHeader(){
   balEl.style.color=balance<0?'#fca5a5':'#bbf7d0';
 }
 
-// ─── 認証 ────────────────────────────────────────────
-auth.onAuthStateChanged(user=>{
-  const ls=document.getElementById('lockScreen');
-  if(user){
-    currentUser=user;
-    ls.style.opacity='0'; ls.style.transition='opacity 0.4s';
-    setTimeout(()=>ls.style.display='none',400);
-    subscribeData();
-  } else {
-    currentUser=null;
-    unsubscribeData();
-    entries=[]; shops=[];
-    ls.style.display='flex'; ls.style.opacity='1';
-  }
-});
-// ポップアップ方式のため getRedirectResult / 二重登録は不要
+// ─── URLコピー ────────────────────────────────────────
+function copyShareUrl(){
+  const url = location.href.split('#')[0] + '#' + location.hash.replace('#','');
+  navigator.clipboard.writeText(url).then(()=>{
+    document.getElementById('copyDone').style.display='block';
+    setTimeout(()=>document.getElementById('copyDone').style.display='none', 3000);
+  }).catch(()=>{
+    // フォールバック
+    const el=document.createElement('textarea');
+    el.value=url; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    document.getElementById('copyDone').style.display='block';
+    setTimeout(()=>document.getElementById('copyDone').style.display='none', 3000);
+  });
+}
+
+// ─── 秘密URLキーで起動 ───────────────────────────────
+const userKey = initUserKey();
+// userKey をそのまま Firestore のドキュメントIDとして使う
+currentUser = { uid: userKey };
+subscribeData();
 
 // 支出/入金トグル
 document.querySelectorAll('.type-btn').forEach(btn=>{
@@ -1019,6 +1013,8 @@ document.getElementById('sumNext').addEventListener('click',()=>{currentSumMonth
 function renderShopChips(){ /* ピッカーに移行したため不使用 */ }
 function renderSettings(){
   document.getElementById('entriesCount').textContent=entries.length+'件';
+  const box=document.getElementById('shareUrlBox');
+  if(box) box.textContent=location.href.split('#')[0]+'#'+location.hash.replace('#','');
   const list=document.getElementById('shopList');
   if(shops.length===0){list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">まだ登録がありません</div>';return;}
   list.innerHTML=shops.map(s=>`
