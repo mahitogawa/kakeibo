@@ -296,6 +296,11 @@
   .settings-row-cat { font-size: 0.9rem; color: #999; margin-top: 2px; }
   .btn-del { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #ccc; padding: 6px; }
   .btn-del:hover { color: #ef4444; }
+  .setting-action-btn { font-size: 0.85rem; font-weight: 700; border-radius: 10px; padding: 8px 14px; border: 1.5px solid; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .setting-action-btn.green  { color: #16a34a; border-color: #86efac; background: #f0fff4; }
+  .setting-action-btn.blue   { color: #2563eb; border-color: #93c5fd; background: #eff6ff; }
+  .setting-action-btn.purple { color: #667eea; border-color: #c5cae9; background: #f0f0ff; }
+  .setting-action-btn.red    { color: #ef4444; border-color: #fca5a5; background: #fff1f1; }
   .add-shop-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
   .add-shop-row { display: flex; gap: 10px; margin-bottom: 10px; }
   .add-shop-input { flex: 1; padding: 13px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: inherit; color: #1a1a2e; background: white; outline: none; }
@@ -317,7 +322,7 @@
   <h1>🐱 にゃんログ家計簿</h1>
   <div class="header-stats">
     <div class="header-stat">
-      <div class="stat-label">💰 収入</div>
+      <div class="stat-label">収入</div>
       <div class="stat-val" id="headerIncome">¥0</div>
     </div>
     <div class="header-divider"></div>
@@ -327,7 +332,7 @@
     </div>
     <div class="header-divider"></div>
     <div class="header-stat">
-      <div class="stat-label">💸 支出</div>
+      <div class="stat-label">支出</div>
       <div class="stat-val" id="headerExpense">¥0</div>
     </div>
   </div>
@@ -485,12 +490,12 @@
       <div class="settings-row">
         <div class="settings-row-icon">📤</div>
         <div style="flex:1"><div class="settings-row-name">バックアップ</div><div class="settings-row-cat">データをファイルに保存</div></div>
-        <button class="btn-del" id="exportBtn" style="font-size:0.78rem;color:#16a34a;border:1.5px solid #86efac;border-radius:8px;padding:6px 10px;background:#f0fff4">保存</button>
+        <button class="setting-action-btn green" id="exportBtn">保存</button>
       </div>
       <div class="settings-row">
         <div class="settings-row-icon">📥</div>
         <div style="flex:1"><div class="settings-row-name">復元</div><div class="settings-row-cat">バックアップから読み込む</div></div>
-        <button class="btn-del" id="importBtn" style="font-size:0.78rem;color:#2563eb;border:1.5px solid #93c5fd;border-radius:8px;padding:6px 10px;background:#eff6ff">読込</button>
+        <button class="setting-action-btn blue" id="importBtn">読込</button>
         <input type="file" id="importFile" accept=".json" style="display:none">
       </div>
     </div>
@@ -503,12 +508,12 @@
       <div class="settings-row">
         <div class="settings-row-icon">🔄</div>
         <div style="flex:1"><div class="settings-row-name">入力フォームをリセット</div><div class="settings-row-cat">入力中の内容をクリア</div></div>
-        <button class="btn-del" id="resetFormBtn" style="font-size:0.78rem;color:#667eea;border:1.5px solid #c5cae9;border-radius:8px;padding:6px 10px;background:#f0f0ff">リセット</button>
+        <button class="setting-action-btn purple" id="resetFormBtn">リセット</button>
       </div>
       <div class="settings-row">
         <div class="settings-row-icon">🗑</div>
         <div style="flex:1"><div class="settings-row-name">全データを削除</div><div class="settings-row-cat">元に戻せません</div></div>
-        <button class="btn-del" id="clearAllBtn" style="font-size:0.78rem;color:#ef4444;border:1.5px solid #fca5a5;border-radius:8px;padding:6px 10px;background:#fff1f1">削除</button>
+        <button class="setting-action-btn red" id="clearAllBtn">削除</button>
       </div>
     </div>
   </div>
