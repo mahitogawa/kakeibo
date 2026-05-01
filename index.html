@@ -651,13 +651,19 @@ async function deleteShop(id){ await userRef().collection('shops').doc(id).delet
 
 // ─── Firestoreリスナー ────────────────────────────────
 function subscribeData(){
-  unsubEntries=userRef().collection('entries').orderBy('date','desc').onSnapshot(snap=>{
-    entries=snap.docs.map(d=>({...d.data(),id:d.id}));
-    updateHeader(); renderCurrentTab();
-  });
-  unsubShops=userRef().collection('shops').onSnapshot(snap=>{
-    shops=snap.docs.map(d=>({...d.data(),id:d.id}));
-  });
+  try{
+    unsubEntries=userRef().collection('entries').orderBy('date','desc').onSnapshot(
+      snap=>{
+        entries=snap.docs.map(d=>({...d.data(),id:d.id}));
+        updateHeader(); renderCurrentTab();
+      },
+      err=>console.warn('entries error:',err.code)
+    );
+    unsubShops=userRef().collection('shops').onSnapshot(
+      snap=>{ shops=snap.docs.map(d=>({...d.data(),id:d.id})); },
+      err=>console.warn('shops error:',err.code)
+    );
+  }catch(e){ console.warn('subscribeData error:',e); }
 }
 function unsubscribeData(){
   if(unsubEntries){unsubEntries();unsubEntries=null;}
@@ -701,10 +707,11 @@ function copyShareUrl(){
 }
 
 // ─── 秘密URLキーで起動 ───────────────────────────────
-const userKey = initUserKey();
-// userKey をそのまま Firestore のドキュメントIDとして使う
-currentUser = { uid: userKey };
-subscribeData();
+window.addEventListener('DOMContentLoaded', ()=>{
+  const userKey = initUserKey();
+  currentUser = { uid: userKey };
+  subscribeData();
+});
 
 // 支出/入金トグル
 document.querySelectorAll('.type-btn').forEach(btn=>{
