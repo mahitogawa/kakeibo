@@ -71,7 +71,7 @@
   .tab:focus-visible { outline: 2px solid #667eea; outline-offset: -2px; }
   .tab.active { color: #667eea; border-bottom-color: #667eea; }
   .tab-icon { font-size: 1.25rem; display: block; margin-bottom: 2px; }
-  .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+  .container { max-width: 600px; margin: 0 auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
@@ -300,12 +300,15 @@
   .picker-btn .picker-arrow { color: #ccc; font-size: 1.3rem; margin-left: 8px; flex-shrink: 0; }
 
   /* ボトムシート */
-  .picker-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: flex-end; justify-content: center; }
+  .picker-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: flex-end; justify-content: center;
+    /* iOSホームバー分だけ上にシフト */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
   .picker-overlay.open { display: flex; }
   .picker-sheet {
     background: white; border-radius: 24px 24px 0 0;
-    width: 100%; max-width: 600px; max-height: 75vh; overflow-y: auto;
-    padding-bottom: max(32px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 600px; max-height: 70vh; overflow-y: auto;
+    padding-bottom: 24px;
   }
   .picker-handle { width: 44px; height: 5px; background: #ddd; border-radius: 3px; margin: 14px auto 0; }
   .picker-sheet-title { padding: 16px 20px 12px; font-size: 1rem; font-weight: 700; color: #333; border-bottom: 1px solid #f0f0f5; }
