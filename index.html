@@ -193,6 +193,33 @@
   .summary-total-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 26px 20px; color: white; text-align: center; margin-bottom: 16px; }
   .summary-total-card .label { font-size: 0.9rem; opacity: 0.9; }
   .summary-total-card .amount { font-size: 2.4rem; font-weight: 700; margin-top: 6px; }
+
+  /* 残り予算カード */
+  .budget-card { border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); background: white; }
+  .budget-card.ok { border-left: 5px solid #22c55e; }
+  .budget-card.warn { border-left: 5px solid #f59e0b; }
+  .budget-card.over { border-left: 5px solid #ef4444; background: #fff8f8; }
+  .budget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .budget-title { font-size: 1rem; font-weight: 800; color: #333; }
+  .budget-remaining { font-size: 1.9rem; font-weight: 800; }
+  .budget-remaining.ok { color: #16a34a; }
+  .budget-remaining.warn { color: #d97706; }
+  .budget-remaining.over { color: #dc2626; }
+  .budget-bar-bg { height: 12px; background: #f0f0f5; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+  .budget-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+  .budget-bar-fill.ok { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .budget-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .budget-bar-fill.over { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .budget-detail { display: flex; justify-content: space-between; font-size: 0.88rem; color: #888; }
+  .budget-detail span { font-weight: 600; }
+  .budget-no-set { text-align: center; padding: 16px; color: #bbb; font-size: 0.9rem; }
+
+  /* 予算設定 */
+  .budget-input-wrap { display: flex; gap: 8px; align-items: center; padding: 14px 16px; }
+  .budget-input { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1.1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; -moz-appearance: textfield; }
+  .budget-input::-webkit-inner-spin-button, .budget-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .budget-input:focus { border-color: #667eea; }
+  .budget-save-btn { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); white-space: nowrap; }
   .summary-cats { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
   .summary-cat-item { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid #f0f0f5; gap: 14px; }
   .summary-cat-item:last-child { border-bottom: none; }
@@ -507,6 +534,8 @@
       <div class="month-label" id="sumMonthLabel"></div>
       <button id="sumNext">▶</button>
     </div>
+    <!-- 残り予算カード -->
+    <div id="budgetCard"></div>
     <div class="summary-total-card">
       <div class="label">今月の合計支出</div>
       <div class="amount" id="sumTotal">¥0</div>
@@ -540,6 +569,16 @@
         <button class="btn-add" id="addShopBtn" style="width:100%">＋ 登録する</button>
       </div>
     </div>
+    <!-- 月の予算設定 -->
+    <div class="settings-section">
+      <div class="settings-section-title">💰 今月の予算を設定</div>
+      <div class="budget-input-wrap">
+        <input type="number" class="budget-input" id="budgetInput" placeholder="例：100000" min="0" inputmode="numeric">
+        <button class="budget-save-btn" id="budgetSaveBtn">保存</button>
+      </div>
+      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">予算を設定すると「あと〇〇円使えます」が集計に表示されます</div>
+    </div>
+
     <!-- カテゴリ管理 -->
     <div class="settings-section">
       <div class="settings-section-title">📂 カテゴリ管理</div>
@@ -782,6 +821,37 @@ function copyShareUrl(){
     document.getElementById('copyDone').style.display='block';
     setTimeout(()=>document.getElementById('copyDone').style.display='none', 3000);
   });
+}
+
+// ─── 月の予算 ────────────────────────────────────────
+function getBudgetKey(){ return 'budget_' + userKey; }
+function loadBudget(){ return parseInt(localStorage.getItem(getBudgetKey())||'0')||0; }
+function saveBudget(v){ localStorage.setItem(getBudgetKey(), v); }
+
+function renderBudgetCard(expense){
+  const budget=loadBudget();
+  const card=document.getElementById('budgetCard');
+  if(!card)return;
+  if(!budget){ card.innerHTML=''; return; }
+  const remaining=budget-expense;
+  const pct=Math.min(expense/budget*100,100);
+  const state=pct>=100?'over':pct>=80?'warn':'ok';
+  const stateLabel=pct>=100?'⚠️ 予算オーバー':pct>=80?'⚠️ もうすぐ上限':'✅ あと使えるお金';
+  card.innerHTML=`
+    <div class="budget-card ${state}">
+      <div class="budget-header">
+        <div class="budget-title">${stateLabel}</div>
+        <div style="font-size:0.82rem;color:#aaa">予算 ${fmt(budget)}</div>
+      </div>
+      <div class="budget-remaining ${state}">${remaining<0?'−'+fmt(-remaining):fmt(remaining)}</div>
+      <div class="budget-bar-bg" style="margin-top:12px">
+        <div class="budget-bar-fill ${state}" style="width:${pct}%"></div>
+      </div>
+      <div class="budget-detail">
+        <span>使用済み ${fmt(expense)}</span>
+        <span>${Math.round(pct)}%</span>
+      </div>
+    </div>`;
 }
 
 // ─── 秘密URLキーで起動 ───────────────────────────────
@@ -1064,8 +1134,9 @@ function renderSummary(){
   const mk=monthKey(currentSumMonth);
   document.getElementById('sumMonthLabel').textContent=monthLabel(currentSumMonth);
   const filtered=entries.filter(e=>e.date&&e.date.startsWith(mk));
-  const total=filtered.reduce((s,e)=>s+(e.amount||0),0);
+  const total=filtered.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
   document.getElementById('sumTotal').textContent=fmt(total);
+  renderBudgetCard(total);
   const byCat={};Object.keys(CAT_ICONS).forEach(k=>byCat[k]=0);
   filtered.forEach(e=>{byCat[e.category]=(byCat[e.category]||0)+e.amount;});
   const labels=Object.keys(byCat).filter(k=>byCat[k]>0);
@@ -1094,6 +1165,10 @@ function renderSettings(){
   document.getElementById('entriesCount').textContent=entries.length+'件';
   const box=document.getElementById('shareUrlBox');
   if(box) box.textContent=location.href.split('#')[0]+'#'+location.hash.replace('#','');
+
+  // 予算入力欄に現在値を表示
+  const budgetInput=document.getElementById('budgetInput');
+  if(budgetInput){ const b=loadBudget(); if(b)budgetInput.value=b; }
 
   // お店リスト
   const list=document.getElementById('shopList');
@@ -1165,6 +1240,17 @@ function renderCategorySettings(){
     });
   });
 }
+
+// 予算保存
+document.getElementById('budgetSaveBtn').addEventListener('click',()=>{
+  const val=parseInt(document.getElementById('budgetInput').value)||0;
+  saveBudget(val);
+  const btn=document.getElementById('budgetSaveBtn');
+  btn.textContent='✅ 保存！'; btn.style.background='#22c55e';
+  setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1200);
+  // 集計タブが開いていれば即反映
+  renderSummary();
+});
 
 document.getElementById('addCatBtn').addEventListener('click',async()=>{
   const icon=document.getElementById('newCatIcon').value.trim()||'🏷';
