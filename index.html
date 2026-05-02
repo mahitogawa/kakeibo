@@ -698,11 +698,22 @@
 <script>
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
 (function(){
+  var LS_KEY = 'nyanlog_userkey';
   var key = location.hash.replace('#','');
-  if(!key || key.length < 16){
-    var arr = new Uint8Array(16);
-    crypto.getRandomValues(arr);
-    key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  if(key && key.length >= 16){
+    // ハッシュあり → localStorageにも保存（正規URL経由でアクセス時）
+    localStorage.setItem(LS_KEY, key);
+  } else {
+    // ハッシュなし（ホーム画面PWA起動など）→ localStorageから復元
+    key = localStorage.getItem(LS_KEY) || '';
+    if(!key || key.length < 16){
+      // 初回・localStorageにもない → 新規生成
+      var arr = new Uint8Array(16);
+      crypto.getRandomValues(arr);
+      key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+      localStorage.setItem(LS_KEY, key);
+    }
+    // URLにハッシュを復元
     history.replaceState(null,'',location.pathname+'#'+key);
   }
   window._userKey = key;
