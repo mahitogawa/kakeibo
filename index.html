@@ -509,8 +509,8 @@
         <label>日付</label>
         <input type="date" id="fDate">
       </div>
-      <div class="form-group">
-        <label>購入先（店名）</label>
+      <div class="form-group" id="shopGroup">
+        <label id="shopLabel">購入先（店名）</label>
         <button type="button" class="picker-btn" id="shopPickerBtn">
           <span id="shopPickerVal">⭐ 登録店から選ぶ</span>
           <span class="picker-arrow">›</span>
@@ -528,7 +528,7 @@
           <span class="picker-arrow">›</span>
         </button>
       </div>
-      <div class="form-group">
+      <div class="form-group" id="payGroup">
         <label>支払い方法</label>
         <button type="button" class="picker-btn has-val" id="payPickerBtn">
           <span id="payPickerVal">💵 現金</span>
@@ -908,14 +908,20 @@ document.querySelectorAll('.type-btn').forEach(btn=>{
     const card=document.getElementById('amountHeroCard');
     const label=document.getElementById('amountHeroLabel');
     const catGroup=document.getElementById('categoryGroup');
+    const payGroup=document.getElementById('payGroup');
+    const shopLabel=document.getElementById('shopLabel');
     if(selectedType==='収入'){
       card.classList.add('income');
       label.textContent='💰 入金金額（円）';
       catGroup.style.display='none';
+      payGroup.style.display='none';
+      shopLabel.textContent='入金元（振込元・支払い元）';
     } else {
       card.classList.remove('income');
       label.textContent='💸 支出金額（円）';
       catGroup.style.display='';
+      payGroup.style.display='';
+      shopLabel.textContent='購入先（店名）';
     }
   });
 });
@@ -1061,7 +1067,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
   const amount=parseInt(document.getElementById('fAmount').value)||0;
   const items=document.getElementById('fItems').value.trim();
   if(!date){alert('日付を入力してください');return;}
-  if(!shop){alert('購入先を入力してください');return;}
+  if(!shop){alert(selectedType==='収入'?'入金元を入力してください':'購入先を入力してください');return;}
   if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
   if(!amount){alert('金額を入力してください');return;}
   const data={date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
@@ -1083,6 +1089,8 @@ function resetForm(){
   document.getElementById('amountHeroCard').classList.remove('income');
   document.getElementById('amountHeroLabel').textContent='💸 支出金額（円）';
   document.getElementById('categoryGroup').style.display='';
+  document.getElementById('payGroup').style.display='';
+  document.getElementById('shopLabel').textContent='購入先（店名）';
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
