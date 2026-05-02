@@ -377,17 +377,17 @@
   <h1>🐱 にゃんログ家計簿</h1>
   <div class="header-stats">
     <div class="header-stat">
-      <div class="stat-label">収入</div>
+      <div class="stat-label">今月の収入</div>
       <div class="stat-val" id="headerIncome">¥0</div>
     </div>
     <div class="header-divider"></div>
     <div class="header-stat balance">
-      <div class="stat-label">残高</div>
+      <div class="stat-label">累計残高</div>
       <div class="stat-val" id="headerBalance">¥0</div>
     </div>
     <div class="header-divider"></div>
     <div class="header-stat">
-      <div class="stat-label">支出</div>
+      <div class="stat-label">今月の支出</div>
       <div class="stat-val" id="headerExpense">¥0</div>
     </div>
   </div>
@@ -748,15 +748,24 @@ function renderCurrentTab(){
 // ─── ヘッダー更新 ─────────────────────────────────────
 function updateHeader(){
   const mk=monthKey(new Date());
+  // 今月の収入・支出
   const monthEntries=entries.filter(e=>e.date&&e.date.startsWith(mk));
-  const income=monthEntries.filter(e=>e.type==='収入').reduce((s,e)=>s+(e.amount||0),0);
-  const expense=monthEntries.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
-  const balance=income-expense;
-  document.getElementById('headerIncome').textContent=fmt(income);
-  document.getElementById('headerExpense').textContent=fmt(expense);
+  const monthIncome =monthEntries.filter(e=>e.type==='収入').reduce((s,e)=>s+(e.amount||0),0);
+  const monthExpense=monthEntries.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
+  // 全期間の累計残高（入金合計 − 支払い合計）
+  const totalIncome =entries.filter(e=>e.type==='収入').reduce((s,e)=>s+(e.amount||0),0);
+  const totalExpense=entries.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
+  const balance=totalIncome-totalExpense;
+  document.getElementById('headerIncome').textContent=fmt(monthIncome);
+  document.getElementById('headerExpense').textContent=fmt(monthExpense);
   const balEl=document.getElementById('headerBalance');
-  balEl.textContent=fmt(Math.abs(balance));
-  balEl.style.color=balance<0?'#fca5a5':'#bbf7d0';
+  if(balance<0){
+    balEl.textContent='−'+fmt(-balance);
+    balEl.style.color='#fca5a5';
+  } else {
+    balEl.textContent=fmt(balance);
+    balEl.style.color='#bbf7d0';
+  }
 }
 
 // ─── URLコピー ────────────────────────────────────────
