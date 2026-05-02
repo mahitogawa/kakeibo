@@ -1176,8 +1176,9 @@ function renderSummary(){
   const total=filtered.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
   document.getElementById('sumTotal').textContent=fmt(total);
   renderBudgetCard(total);
+  // カテゴリ集計は支出のみ（収入は除く）
   const byCat={};Object.keys(CAT_ICONS).forEach(k=>byCat[k]=0);
-  filtered.forEach(e=>{byCat[e.category]=(byCat[e.category]||0)+e.amount;});
+  filtered.filter(e=>e.type!=='収入').forEach(e=>{byCat[e.category]=(byCat[e.category]||0)+e.amount;});
   const labels=Object.keys(byCat).filter(k=>byCat[k]>0);
   const data=labels.map(k=>byCat[k]);
   const colors=labels.map(k=>CAT_COLORS[k]);
@@ -1197,11 +1198,11 @@ function renderSummary(){
       <div class="summary-cat-bar-wrap"><div class="summary-cat-bar" style="width:${(byCat[cat]||0)/maxAmt*100}%;background:${CAT_COLORS[cat]}"></div></div>
       <div class="summary-cat-amount">${fmt(byCat[cat]||0)}</div>
     </div>`).join('');
-  // タップで内訳表示
+  // タップで内訳表示（支出＋入金両方を内訳に表示）
   catEl.querySelectorAll('.summary-cat-item').forEach(row=>{
     row.addEventListener('click',()=>{
       const cat=row.dataset.cat;
-      const catEntries=filtered.filter(e=>e.category===cat);
+      const catEntries=filtered.filter(e=>e.category===cat||(!e.category&&cat==='その他'));
       openCatDetail(cat, catEntries);
     });
   });
