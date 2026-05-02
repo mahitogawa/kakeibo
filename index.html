@@ -389,6 +389,32 @@
   .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; flex-shrink: 0; }
   .color-swatch.selected { border-color: #1a1a2e; transform: scale(1.18); box-shadow: 0 0 0 2px white inset; }
   .cat-row-color { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+  /* カテゴリ内訳シート */
+  .summary-cat-item { cursor: pointer; transition: background 0.12s; }
+  .summary-cat-item:active { background: #f5f5ff; }
+  .summary-cat-item .tap-hint { font-size: 0.75rem; color: #c5cae9; margin-left: 6px; }
+  .cat-detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 400; align-items: flex-end; justify-content: center; padding-bottom: env(safe-area-inset-bottom,0px); }
+  .cat-detail-overlay.open { display: flex; }
+  .cat-detail-sheet { background: white; border-radius: 24px 24px 0 0; width: 100%; max-width: 600px; max-height: 75vh; overflow-y: auto; padding-bottom: 24px; }
+  .cat-detail-handle { width: 44px; height: 5px; background: #ddd; border-radius: 3px; margin: 14px auto 0; }
+  .cat-detail-header { padding: 16px 20px 12px; border-bottom: 1px solid #f0f0f5; display: flex; align-items: center; gap: 12px; }
+  .cat-detail-icon { font-size: 2rem; }
+  .cat-detail-title { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; flex: 1; }
+  .cat-detail-total { font-size: 1.1rem; font-weight: 800; color: #667eea; }
+  .cat-detail-row { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid #f5f5fa; gap: 12px; }
+  .cat-detail-row:last-child { border-bottom: none; }
+  .cat-detail-date { font-size: 0.85rem; color: #999; white-space: nowrap; min-width: 60px; }
+  .cat-detail-info { flex: 1; min-width: 0; }
+  .cat-detail-shop { font-size: 1rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat-detail-memo { font-size: 0.82rem; color: #aaa; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat-detail-amount { font-size: 1.05rem; font-weight: 800; white-space: nowrap; }
+  .cat-detail-amount.expense { color: #1a1a2e; }
+  .cat-detail-amount.income { color: #16a34a; }
+  .cat-detail-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 3px; display: inline-block; }
+  .cat-detail-badge.expense { background: #f0f0ff; color: #667eea; }
+  .cat-detail-badge.income { background: #dcfce7; color: #16a34a; }
+  .cat-detail-empty { text-align: center; padding: 40px 20px; color: #bbb; font-size: 0.95rem; }
 </style>
 </head>
 <body>
@@ -632,6 +658,19 @@
         <button class="setting-action-btn red" id="clearAllBtn">削除</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- カテゴリ内訳シート -->
+<div class="cat-detail-overlay" id="catDetailOverlay">
+  <div class="cat-detail-sheet">
+    <div class="cat-detail-handle"></div>
+    <div class="cat-detail-header">
+      <div class="cat-detail-icon" id="catDetailIcon"></div>
+      <div class="cat-detail-title" id="catDetailTitle"></div>
+      <div class="cat-detail-total" id="catDetailTotal"></div>
+    </div>
+    <div id="catDetailList"></div>
   </div>
 </div>
 
@@ -1150,14 +1189,57 @@ function renderSummary(){
     });
   }
   const maxAmt=Math.max(...Object.values(byCat),1);
-  document.getElementById('summaryCats').innerHTML=Object.keys(CAT_ICONS).map(cat=>`
-    <div class="summary-cat-item">
+  const catEl=document.getElementById('summaryCats');
+  catEl.innerHTML=Object.keys(CAT_ICONS).map(cat=>`
+    <div class="summary-cat-item" data-cat="${cat}">
       <div class="summary-cat-icon">${CAT_ICONS[cat]}</div>
-      <div class="summary-cat-name">${cat}</div>
+      <div class="summary-cat-name">${cat}<span class="tap-hint">${(byCat[cat]||0)>0?'›':''}</span></div>
       <div class="summary-cat-bar-wrap"><div class="summary-cat-bar" style="width:${(byCat[cat]||0)/maxAmt*100}%;background:${CAT_COLORS[cat]}"></div></div>
       <div class="summary-cat-amount">${fmt(byCat[cat]||0)}</div>
     </div>`).join('');
+  // タップで内訳表示
+  catEl.querySelectorAll('.summary-cat-item').forEach(row=>{
+    row.addEventListener('click',()=>{
+      const cat=row.dataset.cat;
+      const catEntries=filtered.filter(e=>e.category===cat);
+      openCatDetail(cat, catEntries);
+    });
+  });
 }
+
+function openCatDetail(cat, catEntries){
+  const overlay=document.getElementById('catDetailOverlay');
+  document.getElementById('catDetailIcon').textContent=CAT_ICONS[cat]||'📦';
+  document.getElementById('catDetailTitle').textContent=cat;
+  const totalExp=catEntries.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
+  const totalInc=catEntries.filter(e=>e.type==='収入').reduce((s,e)=>s+(e.amount||0),0);
+  document.getElementById('catDetailTotal').textContent=fmt(totalExp);
+  const list=document.getElementById('catDetailList');
+  if(!catEntries.length){
+    list.innerHTML='<div class="cat-detail-empty">この月の記録はありません</div>';
+  } else {
+    const sorted=[...catEntries].sort((a,b)=>b.date.localeCompare(a.date));
+    list.innerHTML=sorted.map(e=>{
+      const isIncome=e.type==='収入';
+      const d=new Date(e.date+'T00:00:00');
+      const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
+      return `<div class="cat-detail-row">
+        <div class="cat-detail-date">${dateStr}</div>
+        <div class="cat-detail-info">
+          <div class="cat-detail-shop">${e.shop||'—'}</div>
+          ${e.items?`<div class="cat-detail-memo">🛍 ${e.items}</div>`:''}
+          <span class="cat-detail-badge ${isIncome?'income':'expense'}">${isIncome?'💰 入金':'💸 支出'}</span>
+        </div>
+        <div class="cat-detail-amount ${isIncome?'income':'expense'}">${isIncome?'+':''}${fmt(e.amount)}</div>
+      </div>`;
+    }).join('');
+  }
+  overlay.classList.add('open');
+}
+document.getElementById('catDetailOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('catDetailOverlay'))
+    document.getElementById('catDetailOverlay').classList.remove('open');
+});
 document.getElementById('sumPrev').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()-1,1);renderSummary();});
 document.getElementById('sumNext').addEventListener('click',()=>{currentSumMonth=new Date(currentSumMonth.getFullYear(),currentSumMonth.getMonth()+1,1);renderSummary();});
 function renderShopChips(){ /* ピッカーに移行したため不使用 */ }
