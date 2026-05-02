@@ -296,6 +296,42 @@
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* 再接続モーダル */
+  .reconnect-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .reconnect-card {
+    background: white; border-radius: 24px; padding: 28px 24px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .reconnect-cat { font-size: 3rem; margin-bottom: 8px; }
+  .reconnect-title { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+  .reconnect-desc { font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .reconnect-input {
+    width: 100%; padding: 14px 16px; border: 2px solid #c5cae9;
+    border-radius: 14px; font-size: 0.85rem; color: #1a1a2e;
+    font-family: var(--font); margin-bottom: 12px;
+    outline: none; transition: border-color 0.2s;
+    word-break: break-all;
+  }
+  .reconnect-input:focus { border-color: #667eea; }
+  .reconnect-btn {
+    width: 100%; padding: 14px; background: linear-gradient(135deg,#667eea,#764ba2);
+    color: white; border: none; border-radius: 14px;
+    font-size: 1rem; font-weight: 700; cursor: pointer; font-family: var(--font);
+    margin-bottom: 10px;
+  }
+  .reconnect-new {
+    font-size: 0.85rem; color: #999; cursor: pointer; text-decoration: underline;
+    background: none; border: none; font-family: var(--font);
+  }
+  .reconnect-error { color: #ef4444; font-size: 0.85rem; margin-bottom: 8px; display: none; }
+
   /* 支出/入金トグル */
   .type-toggle { display: flex; background: white; border-radius: 14px; padding: 4px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); gap: 4px; }
   .type-btn { flex: 1; padding: 11px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; background: transparent; color: #aaa; transition: all 0.2s; font-family: var(--font); }
@@ -424,6 +460,23 @@
   <div class="lock-icon">🐱</div>
   <div class="lock-title">にゃんログ家計簿</div>
   <div class="lock-subtitle" id="lockSubtitle">あなた専用のURLを作成しています...</div>
+</div>
+
+<!-- 再接続モーダル（PWAホーム画面起動時にキーがない場合） -->
+<div class="reconnect-overlay" id="reconnectOverlay" style="display:none">
+  <div class="reconnect-card">
+    <div class="reconnect-cat">🐱</div>
+    <div class="reconnect-title">データを再接続</div>
+    <div class="reconnect-desc">
+      ホーム画面から起動すると秘密URLが失われることがあります。<br>
+      Safariの設定タブに表示されている<strong>秘密URL</strong>をコピーして貼り付けてください。
+    </div>
+    <input class="reconnect-input" id="reconnectInput" type="url"
+      placeholder="https://mahitogawa.github.io/kakeibo/#..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="reconnect-error" id="reconnectError">URLが正しくありません。#以降のキーを含むURLを貼り付けてください。</div>
+    <button class="reconnect-btn" id="reconnectBtn">✅ 接続する</button>
+    <button class="reconnect-new" id="reconnectNewBtn">初めて使う（新規データを作成）</button>
+  </div>
 </div>
 
 <div class="header">
@@ -634,9 +687,15 @@
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-section-title">📱 他の端末で使う</div>
+      <div class="settings-section-title">📱 他の端末で使う / ホーム画面から起動</div>
       <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
-        <div style="font-size:0.85rem;color:#666">このURLをブックマークすれば、どのブラウザ・どの端末でも同じデータが使えます。</div>
+        <div style="font-size:0.85rem;color:#666">このURLをコピーして、別の端末やホーム画面から起動する時に使います。</div>
+        <div style="font-size:0.8rem;background:#fff8e1;border:1.5px solid #ffc107;border-radius:10px;padding:10px 12px;color:#7a5f00;width:100%">
+          📌 <strong>iPhoneのホーム画面に追加する場合：</strong><br>
+          ①まず下の「URLをコピー」を押す<br>
+          ②Safariのアドレスバーに貼り付けてアクセス<br>
+          ③「共有 → ホーム画面に追加」で登録
+        </div>
         <div id="shareUrlBox" style="background:#f0f0ff;border-radius:10px;padding:10px 12px;font-size:0.75rem;word-break:break-all;color:#444;width:100%;cursor:pointer;border:1.5px solid #c5cae9" onclick="copyShareUrl()">読み込み中...</div>
         <button onclick="copyShareUrl()" style="background:#667eea;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%">📋 URLをコピー</button>
         <div id="copyDone" style="display:none;color:#22c55e;font-size:0.85rem;font-weight:700">✅ コピーしました！ブックマークに追加してください</div>
@@ -700,26 +759,72 @@
 (function(){
   var LS_KEY = 'nyanlog_userkey';
   var key = location.hash.replace('#','');
+  // iOSのスタンドアロン(PWA)モード判定
+  var isStandalone = (window.navigator.standalone === true) ||
+                     window.matchMedia('(display-mode: standalone)').matches;
+
   if(key && key.length >= 16){
-    // ハッシュあり → localStorageにも保存（正規URL経由でアクセス時）
+    // ハッシュあり → localStorageに保存してそのまま使う
     localStorage.setItem(LS_KEY, key);
+    window._userKey = key;
   } else {
-    // ハッシュなし（ホーム画面PWA起動など）→ localStorageから復元
+    // ハッシュなし → localStorageから復元を試みる
     key = localStorage.getItem(LS_KEY) || '';
-    if(!key || key.length < 16){
-      // 初回・localStorageにもない → 新規生成
+    if(key && key.length >= 16){
+      // localStorageにあった → URLを復元
+      history.replaceState(null,'',location.pathname+'#'+key);
+      window._userKey = key;
+    } else if(isStandalone){
+      // PWAモードかつlocalStorageにもない → 再接続モーダルを表示（データ消失防止）
+      window._userKey = null; // 後でモーダルで設定
+    } else {
+      // 通常ブラウザで初回 → 新規キー生成
       var arr = new Uint8Array(16);
       crypto.getRandomValues(arr);
       key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
       localStorage.setItem(LS_KEY, key);
+      history.replaceState(null,'',location.pathname+'#'+key);
+      window._userKey = key;
     }
-    // URLにハッシュを復元
-    history.replaceState(null,'',location.pathname+'#'+key);
   }
-  window._userKey = key;
+  window._needReconnect = (window._userKey === null);
+  window._LS_KEY = LS_KEY;
 })();
 
 function initUserKey(){ return window._userKey; }
+
+// ─── 再接続モーダル制御 ────────────────────────────────
+(function(){
+  if(!window._needReconnect) return;
+  // モーダルを表示
+  var overlay = document.getElementById('reconnectOverlay');
+  overlay.style.display = 'flex';
+
+  // 接続ボタン
+  document.getElementById('reconnectBtn').addEventListener('click', function(){
+    var val = document.getElementById('reconnectInput').value.trim();
+    var match = val.match(/#([0-9a-f]{16,})/i);
+    var errEl = document.getElementById('reconnectError');
+    if(!match){
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+    var key = match[1];
+    localStorage.setItem(window._LS_KEY, key);
+    location.href = location.pathname + '#' + key;
+  });
+
+  // 新規作成ボタン
+  document.getElementById('reconnectNewBtn').addEventListener('click', function(){
+    if(!confirm('新規データを作成します。既存のデータは引き継がれません。よろしいですか？')) return;
+    var arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    var key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    localStorage.setItem(window._LS_KEY, key);
+    location.href = location.pathname + '#' + key;
+  });
+})();
 
 // ─── 🔄ボタン ────────────────────────────────────────
 document.getElementById('reloadBtn').addEventListener('click', () => {
