@@ -350,6 +350,18 @@
   .add-shop-input:focus { border-color: #667eea; }
   .add-shop-select { padding: 12px 10px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #555; background: white; outline: none; cursor: pointer; }
   .btn-add { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); }
+
+  /* カテゴリ管理 */
+  .add-cat-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
+  .add-cat-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+  .add-cat-emoji { width: 54px; padding: 11px 6px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: var(--font); outline: none; background: white; cursor: pointer; }
+  .add-cat-emoji:focus { border-color: #667eea; }
+  .add-cat-name { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; }
+  .add-cat-name:focus { border-color: #667eea; }
+  .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; flex-shrink: 0; }
+  .color-swatch.selected { border-color: #1a1a2e; transform: scale(1.18); box-shadow: 0 0 0 2px white inset; }
+  .cat-row-color { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -528,6 +540,20 @@
         <button class="btn-add" id="addShopBtn" style="width:100%">＋ 登録する</button>
       </div>
     </div>
+    <!-- カテゴリ管理 -->
+    <div class="settings-section">
+      <div class="settings-section-title">📂 カテゴリ管理</div>
+      <div id="catList"></div>
+      <div class="add-cat-form">
+        <div class="add-cat-row">
+          <input type="text" class="add-cat-emoji" id="newCatIcon" placeholder="🏷" maxlength="2" value="🏷">
+          <input type="text" class="add-cat-name" id="newCatName" placeholder="カテゴリ名を入力…" maxlength="10">
+        </div>
+        <div class="color-palette" id="colorPalette"></div>
+        <button class="btn-add" id="addCatBtn" style="width:100%">＋ カテゴリを追加</button>
+      </div>
+    </div>
+
     <div class="settings-section">
       <div class="settings-section-title">💾 バックアップ・復元</div>
       <div class="settings-row">
@@ -638,15 +664,22 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ─── 定数 ────────────────────────────────────────────
-const CAT_ICONS  = {'食費':'🍱','日用品':'🧴','交通費':'🚃','医療':'💊','娯楽':'🎮','その他':'📦'};
-const CAT_COLORS = {'食費':'#f97316','日用品':'#8b5cf6','交通費':'#3b82f6','医療':'#ef4444','娯楽':'#ec4899','その他':'#6b7280'};
-const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
-const CAT_LIST   = [
+// ─── デフォルトカテゴリ ────────────────────────────────
+const DEFAULT_CAT_LIST = [
   {key:'食費',icon:'🍱',color:'#f97316'},{key:'日用品',icon:'🧴',color:'#8b5cf6'},
   {key:'交通費',icon:'🚃',color:'#3b82f6'},{key:'医療',icon:'💊',color:'#ef4444'},
   {key:'娯楽',icon:'🎮',color:'#ec4899'},{key:'その他',icon:'📦',color:'#6b7280'}
 ];
+const CAT_PALETTE = ['#f97316','#8b5cf6','#3b82f6','#ef4444','#ec4899','#6b7280','#22c55e','#f59e0b','#14b8a6','#6366f1','#e11d48','#0ea5e9'];
+let CAT_LIST = [...DEFAULT_CAT_LIST];
+let CAT_ICONS  = {}, CAT_COLORS = {};
+function rebuildCatMaps(){
+  CAT_ICONS={};CAT_COLORS={};
+  CAT_LIST.forEach(c=>{CAT_ICONS[c.key]=c.icon;CAT_COLORS[c.key]=c.color;});
+}
+rebuildCatMaps();
+
+const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
 const PAY_LIST = [{key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}];
 
 // ─── 状態変数 ─────────────────────────────────────────
@@ -667,6 +700,23 @@ async function saveEntry(data,id){ const c=userRef().collection('entries'); retu
 async function deleteEntry(id){ await userRef().collection('entries').doc(id).delete(); }
 async function saveShop(data,id){ const c=userRef().collection('shops'); return id?c.doc(id).set(data):c.add(data); }
 async function deleteShop(id){ await userRef().collection('shops').doc(id).delete(); }
+
+// ─── カテゴリ Firestore 操作 ──────────────────────────
+async function loadCategories(){
+  try{
+    const doc=await userRef().collection('settings').doc('categories').get();
+    if(doc.exists&&doc.data().list&&doc.data().list.length>0){
+      CAT_LIST=doc.data().list;
+    } else {
+      CAT_LIST=[...DEFAULT_CAT_LIST];
+    }
+    rebuildCatMaps();
+  }catch(e){ CAT_LIST=[...DEFAULT_CAT_LIST]; rebuildCatMaps(); }
+}
+async function saveCategories(){
+  await userRef().collection('settings').doc('categories').set({list:CAT_LIST});
+  rebuildCatMaps();
+}
 
 // ─── Firestoreリスナー ────────────────────────────────
 function subscribeData(){
@@ -728,6 +778,7 @@ function copyShareUrl(){
 // ─── 秘密URLキーで起動 ───────────────────────────────
 const userKey = initUserKey();
 currentUser = { uid: userKey };
+loadCategories().then(()=>{ renderColorPalette(); });
 subscribeData();
 
 // 支出/入金トグル
@@ -1034,18 +1085,93 @@ function renderSettings(){
   document.getElementById('entriesCount').textContent=entries.length+'件';
   const box=document.getElementById('shareUrlBox');
   if(box) box.textContent=location.href.split('#')[0]+'#'+location.hash.replace('#','');
+
+  // お店リスト
   const list=document.getElementById('shopList');
-  if(shops.length===0){list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">まだ登録がありません</div>';return;}
-  list.innerHTML=shops.map(s=>`
-    <div class="settings-row">
-      <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
-      <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
-      <button class="btn-del" data-id="${s.id}">🗑</button>
-    </div>`).join('');
-  list.querySelectorAll('.btn-del').forEach(btn=>{
-    btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
+  if(shops.length===0){
+    list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">まだ登録がありません</div>';
+  } else {
+    list.innerHTML=shops.map(s=>`
+      <div class="settings-row">
+        <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
+        <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
+        <button class="btn-del" data-id="${s.id}">🗑</button>
+      </div>`).join('');
+    list.querySelectorAll('.btn-del').forEach(btn=>{
+      btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
+    });
+  }
+
+  // お店登録のカテゴリ選択を動的に更新
+  const shopCatSel=document.getElementById('newShopCat');
+  if(shopCatSel){
+    shopCatSel.innerHTML=CAT_LIST.map(c=>`<option value="${c.key}">${c.icon} ${c.key}</option>`).join('');
+  }
+
+  // カテゴリ管理リスト
+  renderCategorySettings();
+  renderColorPalette();
+}
+// ─── カテゴリ管理UI ───────────────────────────────────
+let selectedCatColor = CAT_PALETTE[0];
+
+function renderColorPalette(){
+  const palette=document.getElementById('colorPalette');
+  if(!palette)return;
+  palette.innerHTML=CAT_PALETTE.map(c=>`
+    <div class="color-swatch${c===selectedCatColor?' selected':''}" data-color="${c}" style="background:${c}"></div>
+  `).join('');
+  palette.querySelectorAll('.color-swatch').forEach(sw=>{
+    sw.addEventListener('click',()=>{
+      selectedCatColor=sw.dataset.color;
+      palette.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+      sw.classList.add('selected');
+    });
   });
 }
+
+function renderCategorySettings(){
+  const list=document.getElementById('catList');
+  if(!list)return;
+  if(CAT_LIST.length===0){
+    list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">カテゴリがありません</div>';
+    return;
+  }
+  list.innerHTML=CAT_LIST.map((c,i)=>`
+    <div class="settings-row">
+      <div class="settings-row-icon">${c.icon}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex:1">
+        <div class="cat-row-color" style="background:${c.color}"></div>
+        <div class="settings-row-name">${c.key}</div>
+      </div>
+      <button class="btn-del" data-idx="${i}">🗑</button>
+    </div>`).join('');
+  list.querySelectorAll('.btn-del').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const idx=parseInt(btn.dataset.idx);
+      if(!confirm(`「${CAT_LIST[idx].key}」を削除しますか？`))return;
+      CAT_LIST.splice(idx,1);
+      await saveCategories();
+      renderSettings();
+    });
+  });
+}
+
+document.getElementById('addCatBtn').addEventListener('click',async()=>{
+  const icon=document.getElementById('newCatIcon').value.trim()||'🏷';
+  const name=document.getElementById('newCatName').value.trim();
+  if(!name){alert('カテゴリ名を入力してください');return;}
+  if(CAT_LIST.find(c=>c.key===name)){alert('すでに登録されています');return;}
+  CAT_LIST.push({key:name,icon,color:selectedCatColor});
+  await saveCategories();
+  document.getElementById('newCatName').value='';
+  document.getElementById('newCatIcon').value='🏷';
+  const btn=document.getElementById('addCatBtn');
+  btn.textContent='✅ 追加しました！';btn.style.background='#22c55e';
+  setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
+  renderSettings();
+});
+
 document.getElementById('addShopBtn').addEventListener('click',async()=>{
   const name=document.getElementById('newShopName').value.trim();
   const cat=document.getElementById('newShopCat').value;
