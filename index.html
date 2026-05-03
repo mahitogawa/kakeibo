@@ -1206,8 +1206,11 @@ function parseReceiptText(text){
   for(const line of lines){
     // 価格のみの行（¥NNN軽 など）→ 前の行が品名
     const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
-    if(priceOnly){
-      const price=parseInt(priceOnly[1].replace(/[,，]/g,''));
+    // @単価×N点 ¥合計軽 パターン（FamilyMart）→ 前の行が品名
+    const atQtyPrice=line.match(/^[@＠][\d,，.]+[×xｘ]\s*\d+[点個本]\s+[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+    if(priceOnly||atQtyPrice){
+      const m2=priceOnly||atQtyPrice;
+      const price=parseInt(m2[1].replace(/[,，]/g,''));
       const cleanPrev=prevLine.replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
       if(cleanPrev.length>=2&&!skipWords.test(cleanPrev)&&!/^[@＠×\d¥￥]/.test(cleanPrev)&&price>=10&&price<50000){
         items.push({name:cleanPrev,price});
