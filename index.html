@@ -1166,32 +1166,27 @@ function preprocessImage(file){
 function parseReceiptText(text){
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
   let total=null;
-  // パターン1: 支払金額・お支払い合計（最優先）
+  // 金額候補を全行から収集（¥マーク付きまたは合計系ワードの後）
+  const amountCandidates=[];
   for(const line of lines){
-    const m=line.match(/支払[金額い合計]*\s*[¥￥\\]?\s*([\d,，]+)/);
-    if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
+    // 支払金額（完全一致優先）
+    const m1=line.match(/支払金額\s*[¥￥\\]?\s*([\d,，]+)/);
+    if(m1){total=parseInt(m1[1].replace(/[,，]/g,''));break;}
+    // 合計・お会計
+    const m2=line.match(/(?:合計|会計)\s*[¥￥\\]?\s*([\d,，]+)/);
+    if(m2)amountCandidates.push({v:parseInt(m2[1].replace(/[,，]/g,'')),priority:2});
+    // ¥マーク付きの数字
+    const m3=line.match(/[¥￥]([\d,，]+)/g);
+    if(m3)m3.forEach(s=>{
+      const n=parseInt(s.replace(/[¥￥,，]/g,''));
+      if(n>=100)amountCandidates.push({v:n,priority:1});
+    });
   }
-  // パターン2: 合計・小計・計 の行
-  if(!total){
-    for(const line of lines){
-      const m=line.match(/[合小]?計\s*[¥￥\\]?\s*([\d,，]+)/);
-      if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
-    }
-  }
-  // パターン3: ¥マーク付きの数字の最大値
-  if(!total){
-    const yenNums=[];
-    for(const line of lines){
-      const m=line.match(/[¥￥\\]([\d,，]+)/g);
-      if(m)m.forEach(s=>{const n=parseInt(s.replace(/[¥￥\\,，]/g,''));if(n>0)yenNums.push(n);});
-    }
-    if(yenNums.length>0)total=Math.max(...yenNums);
-  }
-  // パターン4: 3桁以上の数字の最大値
-  if(!total){
-    const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,''))):[];});
-    const valid=nums.filter(n=>n>0&&n<1000000);
-    if(valid.length>0)total=Math.max(...valid);
+  // 支払金額が見つからなかった場合は優先度順・金額最大で決定
+  if(!total&&amountCandidates.length>0){
+    const p2=amountCandidates.filter(x=>x.priority===2);
+    if(p2.length>0)total=Math.max(...p2.map(x=>x.v));
+    else total=Math.max(...amountCandidates.map(x=>x.v));
   }
   // 店名（数字・記号で始まらない・2文字以上の最初の行）
   const rawShop=lines.find(l=>l.length>1&&!/^[\d¥￥\\＼\-－—―\s]/.test(l))||lines[0]||'';
