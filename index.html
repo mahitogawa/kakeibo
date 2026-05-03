@@ -1120,6 +1120,7 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
+      if(data.payMethod)selectPayment(data.payMethod);
       if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>i.name).join(' ');}
       else if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
       showOcrResult(data);
@@ -1192,8 +1193,9 @@ function parseReceiptText(text){
     const valid=nums.filter(n=>n>0&&n<1000000);
     if(valid.length>0)total=Math.max(...valid);
   }
-  // 店名（数字で始まらない・2文字以上の最初の行）
-  const shop=lines.find(l=>l.length>1&&!/^[\d¥￥\\]/.test(l))||lines[0]||'';
+  // 店名（数字・記号で始まらない・2文字以上の最初の行）
+  const rawShop=lines.find(l=>l.length>1&&!/^[\d¥￥\\＼\-－—―\s]/.test(l))||lines[0]||'';
+  const shop=rawShop.replace(/^[\-－—―\s]+/,'').trim();
   // 日付
   let date=new Date().toISOString().split('T')[0];
   for(const line of lines){
@@ -1204,9 +1206,11 @@ function parseReceiptText(text){
       break;
     }
   }
+  // 支払い方法を検出
+  const payMethod=text.match(/クレジット|カード|VISA|Master|電子マネー|Suica|PayPay|交通系/i)?'クレジット':'現金';
   // OCRテキストをメモ欄に入れる（確認用）
-  const memo=lines.slice(0,8).join(' / ');
-  return {date,shop,total,items:[],rawMemo:memo};
+  const memo=lines.slice(0,8).join(' / ').replace(/^[\-－—―\s]+/,'');
+  return {date,shop,total,items:[],rawMemo:memo,payMethod};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
