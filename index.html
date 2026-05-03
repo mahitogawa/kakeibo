@@ -1097,20 +1097,21 @@ async function processImage(file){
           if(jsonMatch)data=JSON.parse(jsonMatch[0]);
         }catch(e2){}
       }
-      // フォールバック: OCR.space API
+      // フォールバック: Google Cloud Vision API
       if(!data){
-        statusTextEl.innerHTML='<span class="spinner"></span> OCRで解析中...';
-        const fd=new FormData();
-        fd.append('apikey','K85091803088957');
-        fd.append('file',file);
-        fd.append('language','jpn');
-        fd.append('scale','true');
-        fd.append('isTable','true');
-        const res=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:fd});
-        const json=await res.json();
-        if(!json.IsErroredOnProcessing&&json.ParsedResults&&json.ParsedResults[0]){
-          data=parseReceiptText(json.ParsedResults[0].ParsedText);
-        }
+        statusTextEl.innerHTML='<span class="spinner"></span> Google Vision OCRで解析中...';
+        const base64=dataUrl.split(',')[1];
+        const visionRes=await fetch(
+          'https://vision.googleapis.com/v1/images:annotate?key=AQ.Ab8RN6JdiydI64PlEspPNqnHVC4mNvQoS-0bSC2kKQi2EWT_sw',
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body:JSON.stringify({requests:[{image:{content:base64},features:[{type:'DOCUMENT_TEXT_DETECTION'}]}]})}
+        );
+        const visionJson=await visionRes.json();
+        const fullText=visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].fullTextAnnotation
+          ?visionJson.responses[0].fullTextAnnotation.text
+          :(visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].textAnnotations
+            ?visionJson.responses[0].textAnnotations[0].description:'');
+        if(fullText)data=parseReceiptText(fullText);
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
