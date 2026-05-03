@@ -1210,13 +1210,13 @@ function parseReceiptText(text){
     if(skipWords.test(line))continue;
     if(/\*{3,}/.test(line))continue; // クレカ番号マスク行を除外
     if(/^[\\¥￥\s\d,，]+$/.test(line))continue; // 数字・記号だけの行を除外
-    // 行末に金額パターン（¥NNN または NNN軽/減）
-    const m=line.match(/^(.{2,}?)\s+[¥￥]?(\d{2,6})[軽減*＊]?$/);
+    // 行末に金額パターン（¥NNN・￥NNN・\NNN・NNN軽 など）
+    const m=line.match(/^(.+?)\s+[¥￥\\]?\s*(\d{2,6})\s*[軽減*＊※]?\s*$/);
     if(m){
-      const name=m[1].replace(/^[\-－—―◎@◉\s]+/,'').trim();
+      const name=m[1].replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
       const price=parseInt(m[2]);
-      // 名前が2文字以上・価格が妥当な範囲
-      if(name.length>=2&&price>=10&&price<50000)items.push({name,price});
+      // 名前2文字以上・価格50円以上（ゴミ除外）
+      if(name.length>=2&&price>=50&&price<50000)items.push({name,price});
     }
   }
   const memo=items.length>0
