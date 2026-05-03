@@ -1219,9 +1219,8 @@ function parseReceiptText(text){
       if(name.length>=2&&price>=50&&price<50000)items.push({name,price});
     }
   }
-  const memo=items.length>0
-    ?items.map(i=>`${i.name} ¥${i.price}`).join('\n')
-    :lines.slice(0,8).join(' / ').replace(/^[\-－—―\s]+/,'');
+  // DEBUG: 全OCRテキストを表示して確認
+  const memo=lines.join(' / ');
   return {date,shop,total,items,rawMemo:memo,payMethod};
 }
 function showOcrResult(data){
