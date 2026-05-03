@@ -1107,6 +1107,15 @@ async function processImage(file){
            body:JSON.stringify({requests:[{image:{content:base64},features:[{type:'DOCUMENT_TEXT_DETECTION'}]}]})}
         );
         const visionJson=await visionRes.json();
+        // デバッグ: エラーがあれば表示
+        if(visionJson.error){
+          statusTextEl.textContent='⚠️ Vision APIエラー: '+visionJson.error.message;
+          return;
+        }
+        if(visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].error){
+          statusTextEl.textContent='⚠️ '+visionJson.responses[0].error.message;
+          return;
+        }
         const fullText=visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].fullTextAnnotation
           ?visionJson.responses[0].fullTextAnnotation.text
           :(visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].textAnnotations
