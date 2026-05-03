@@ -1084,15 +1084,35 @@ async function processImage(file){
     const statusEl=document.getElementById('aiStatus');
     const statusTextEl=document.getElementById('aiStatusText');
     statusEl.className='ai-status analyzing';
-    statusTextEl.innerHTML='<span class="spinner"></span> AIがレシートを解析中...';
+    statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
     document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
     try{
-      const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:
-{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
-      const result=await window.cowork.askClaude(prompt,[dataUrl]);
-      const jsonMatch=result.match(/\{[\s\S]*\}/);
-      if(!jsonMatch)throw new Error('no json');
-      const data=JSON.parse(jsonMatch[0]);
+      let data=null;
+      // Cowork AI が使える場合は優先（精度高）
+      if(window.cowork&&window.cowork.askClaude){
+        try{
+          const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:\n{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
+          const result=await window.cowork.askClaude(prompt,[dataUrl]);
+          const jsonMatch=result.match(/\{[\s\S]*\}/);
+          if(jsonMatch)data=JSON.parse(jsonMatch[0]);
+        }catch(e2){}
+      }
+      // フォールバック: OCR.space API
+      if(!data){
+        statusTextEl.innerHTML='<span class="spinner"></span> OCRで解析中...';
+        const fd=new FormData();
+        fd.append('apikey','K85091803088957');
+        fd.append('file',file);
+        fd.append('language','jpn');
+        fd.append('scale','true');
+        fd.append('isTable','true');
+        const res=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:fd});
+        const json=await res.json();
+        if(!json.IsErroredOnProcessing&&json.ParsedResults&&json.ParsedResults[0]){
+          data=parseReceiptText(json.ParsedResults[0].ParsedText);
+        }
+      }
+      if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
@@ -1107,6 +1127,33 @@ async function processImage(file){
     }
   };
   reader.readAsDataURL(file);
+}
+function parseReceiptText(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  // 合計金額を探す（合計・小計・計 の後の数字）
+  let total=null;
+  for(const line of lines){
+    const m=line.match(/[合小]?計[^\d]*([\d,，]+)/);
+    if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
+  }
+  // 見つからなければ最大の数値を合計とみなす
+  if(!total){
+    const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,'')));[];});
+    if(nums.length>0)total=Math.max(...nums);
+  }
+  // 店名（数字で始まらない最初の行）
+  const shop=lines.find(l=>l.length>1&&!/^\d/.test(l))||lines[0]||'';
+  // 日付を探す
+  let date=new Date().toISOString().split('T')[0];
+  for(const line of lines){
+    const m=line.match(/(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})/)||line.match(/(\d{2})[\.\/](\d{1,2})[\.\/](\d{1,2})/);
+    if(m){
+      const y=m[1].length===2?'20'+m[1]:m[1];
+      date=`${y}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+      break;
+    }
+  }
+  return {date,shop,total,items:[]};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
