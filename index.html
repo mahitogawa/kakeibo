@@ -446,6 +446,18 @@
   .cat-detail-amount.expense { color: #1a1a2e; }
   .cat-detail-amount.income { color: #16a34a; }
   .cat-detail-empty { text-align: center; padding: 40px 20px; color: #bbb; font-size: 0.95rem; }
+
+  /* 入金一覧 */
+  .income-section { background: white; border-radius: 16px; margin-top: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .income-section-header { padding: 12px 16px; background: linear-gradient(135deg,#22c55e,#16a34a); color: white; display: flex; align-items: center; justify-content: space-between; }
+  .income-section-title { font-size: 1rem; font-weight: 700; }
+  .income-section-total { font-size: 1.1rem; font-weight: 800; }
+  .income-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid #f5f5fa; gap: 10px; }
+  .income-row:last-child { border-bottom: none; }
+  .income-row-date { font-size: 0.82rem; color: #aaa; white-space: nowrap; min-width: 36px; }
+  .income-row-shop { flex: 1; font-size: 0.95rem; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .income-row-amount { font-size: 1rem; font-weight: 800; color: #16a34a; white-space: nowrap; }
+  .income-empty { text-align: center; padding: 20px; color: #bbb; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -619,6 +631,7 @@
       <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
     </div>
     <div class="summary-cats" id="summaryCats"></div>
+    <div id="incomeSection"></div>
   </div>
 </div>
 
@@ -1334,6 +1347,32 @@ function renderSummary(){
       openCatDetail(cat, catEntries);
     });
   });
+
+  // 入金一覧
+  const incomeEntries=filtered.filter(e=>e.type==='収入').sort((a,b)=>b.date.localeCompare(a.date));
+  const incomeTotal=incomeEntries.reduce((s,e)=>s+(e.amount||0),0);
+  const incomeEl=document.getElementById('incomeSection');
+  if(incomeEl){
+    if(incomeEntries.length>0){
+      incomeEl.innerHTML=`<div class="income-section">
+        <div class="income-section-header">
+          <div class="income-section-title">💰 今月の入金</div>
+          <div class="income-section-total">+${fmt(incomeTotal)}</div>
+        </div>
+        ${incomeEntries.map(e=>{
+          const d=new Date(e.date+'T00:00:00');
+          const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
+          return `<div class="income-row">
+            <div class="income-row-date">${dateStr}</div>
+            <div class="income-row-shop">${e.shop||e.items||'—'}</div>
+            <div class="income-row-amount">+${fmt(e.amount)}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    } else {
+      incomeEl.innerHTML='';
+    }
+  }
 }
 
 function openCatDetail(cat, catEntries){
