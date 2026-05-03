@@ -1117,7 +1117,8 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
-      if(data.items&&data.items.length>0)document.getElementById('fItems').value=data.items.map(i=>i.name).join(' ');
+      if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>i.name).join(' ');}
+      else if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
       showOcrResult(data);
       statusEl.className='ai-status done';
       statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
@@ -1130,20 +1131,30 @@ async function processImage(file){
 }
 function parseReceiptText(text){
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-  // 合計金額を探す（合計・小計・計 の後の数字）
   let total=null;
+  // パターン1: 合計・小計・計 の行
   for(const line of lines){
-    const m=line.match(/[合小]?計[^\d]*([\d,，]+)/);
+    const m=line.match(/[合小]?計\s*[¥￥\\]?\s*([\d,，]+)/);
     if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
   }
-  // 見つからなければ最大の数値を合計とみなす
+  // パターン2: ¥マーク付きの数字（最大値）
+  if(!total){
+    const yenNums=[];
+    for(const line of lines){
+      const m=line.match(/[¥￥\\]([\d,，]+)/g);
+      if(m)m.forEach(s=>{const n=parseInt(s.replace(/[¥￥\\,，]/g,''));if(n>0)yenNums.push(n);});
+    }
+    if(yenNums.length>0)total=Math.max(...yenNums);
+  }
+  // パターン3: 3桁以上の数字の最大値
   if(!total){
     const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,''))):[];});
-    if(nums.length>0)total=Math.max(...nums);
+    const valid=nums.filter(n=>n>0&&n<1000000);
+    if(valid.length>0)total=Math.max(...valid);
   }
-  // 店名（数字で始まらない最初の行）
-  const shop=lines.find(l=>l.length>1&&!/^\d/.test(l))||lines[0]||'';
-  // 日付を探す
+  // 店名（数字で始まらない・2文字以上の最初の行）
+  const shop=lines.find(l=>l.length>1&&!/^[\d¥￥\\]/.test(l))||lines[0]||'';
+  // 日付
   let date=new Date().toISOString().split('T')[0];
   for(const line of lines){
     const m=line.match(/(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})/)||line.match(/(\d{2})[\.\/](\d{1,2})[\.\/](\d{1,2})/);
@@ -1153,7 +1164,9 @@ function parseReceiptText(text){
       break;
     }
   }
-  return {date,shop,total,items:[]};
+  // OCRテキストをメモ欄に入れる（確認用）
+  const memo=lines.slice(0,8).join(' / ');
+  return {date,shop,total,items:[],rawMemo:memo};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
