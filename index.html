@@ -1209,7 +1209,7 @@ function parseReceiptText(text){
     if(priceOnly){
       const price=parseInt(priceOnly[1].replace(/[,，]/g,''));
       const cleanPrev=prevLine.replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
-      if(cleanPrev.length>=2&&!skipWords.test(cleanPrev)&&!/^[@＠×\d]/.test(cleanPrev)&&price>=10&&price<50000){
+      if(cleanPrev.length>=2&&!skipWords.test(cleanPrev)&&!/^[@＠×\d¥￥]/.test(cleanPrev)&&price>=10&&price<50000){
         items.push({name:cleanPrev,price});
       }
     } else {
