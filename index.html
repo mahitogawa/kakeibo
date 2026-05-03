@@ -1121,8 +1121,8 @@ async function processImage(file){
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
       if(data.payMethod)selectPayment(data.payMethod);
-      if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>i.name).join(' ');}
-      else if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
+      if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
+      else if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>`${i.name} ¥${i.price}`).join('\n');}
       showOcrResult(data);
       statusEl.className='ai-status done';
       statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
@@ -1208,9 +1208,23 @@ function parseReceiptText(text){
   }
   // 支払い方法を検出
   const payMethod=text.match(/クレジット|カード|VISA|Master|電子マネー|Suica|PayPay|交通系/i)?'クレジット':'現金';
-  // OCRテキストをメモ欄に入れる（確認用）
-  const memo=lines.slice(0,8).join(' / ').replace(/^[\-－—―\s]+/,'');
-  return {date,shop,total,items:[],rawMemo:memo,payMethod};
+  // 商品行を抽出（価格で終わる行・合計系除外）
+  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|レジ袋|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員/;
+  const items=[];
+  for(const line of lines){
+    if(skipWords.test(line))continue;
+    // 行末に金額パターン（¥NNN または NNN軽/減）
+    const m=line.match(/^(.{2,}?)\s+[¥￥]?(\d{2,6})[軽減*＊]?$/);
+    if(m){
+      const name=m[1].replace(/^[\-－—―◎@\s]+/,'').trim();
+      const price=parseInt(m[2]);
+      if(name.length>0&&price>0&&price<100000)items.push({name,price});
+    }
+  }
+  const memo=items.length>0
+    ?items.map(i=>`${i.name} ¥${i.price}`).join('\n')
+    :lines.slice(0,8).join(' / ').replace(/^[\-－—―\s]+/,'');
+  return {date,shop,total,items,rawMemo:memo,payMethod};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
