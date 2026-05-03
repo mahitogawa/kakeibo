@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -1097,30 +1098,18 @@ async function processImage(file){
           if(jsonMatch)data=JSON.parse(jsonMatch[0]);
         }catch(e2){}
       }
-      // フォールバック: Google Cloud Vision API
+      // フォールバック: Tesseract.js（ブラウザ内OCR・APIキー不要）
       if(!data){
-        statusTextEl.innerHTML='<span class="spinner"></span> Google Vision OCRで解析中...';
-        const base64=dataUrl.split(',')[1];
-        const visionRes=await fetch(
-          'https://vision.googleapis.com/v1/images:annotate?key=AQ.Ab8RN6JdiydI64PlEspPNqnHVC4mNvQoS-0bSC2kKQi2EWT_sw',
-          {method:'POST',headers:{'Content-Type':'application/json'},
-           body:JSON.stringify({requests:[{image:{content:base64},features:[{type:'DOCUMENT_TEXT_DETECTION'}]}]})}
-        );
-        const visionJson=await visionRes.json();
-        // デバッグ: エラーがあれば表示
-        if(visionJson.error){
-          statusTextEl.textContent='⚠️ Vision APIエラー: '+visionJson.error.message;
-          return;
-        }
-        if(visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].error){
-          statusTextEl.textContent='⚠️ '+visionJson.responses[0].error.message;
-          return;
-        }
-        const fullText=visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].fullTextAnnotation
-          ?visionJson.responses[0].fullTextAnnotation.text
-          :(visionJson.responses&&visionJson.responses[0]&&visionJson.responses[0].textAnnotations
-            ?visionJson.responses[0].textAnnotations[0].description:'');
-        if(fullText)data=parseReceiptText(fullText);
+        statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中（初回は少し時間がかかります）...';
+        const result=await Tesseract.recognize(file,'jpn',{
+          logger:m=>{
+            if(m.status==='recognizing text'){
+              statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中 '+(m.progress*100).toFixed(0)+'%...';
+            }
+          }
+        });
+        const fullText=result.data.text;
+        if(fullText&&fullText.trim().length>0)data=parseReceiptText(fullText);
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
