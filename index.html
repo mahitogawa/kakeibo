@@ -1098,22 +1098,21 @@ async function processImage(file){
           if(jsonMatch)data=JSON.parse(jsonMatch[0]);
         }catch(e2){}
       }
-      // フォールバック: Tesseract.js（ブラウザ内OCR・APIキー不要）
+      // フォールバック: Cloudflare Worker経由でGoogle Vision API
       if(!data){
-        statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中（初回は少し時間がかかります）...';
-        // 画像をcanvasで前処理（グレースケール＋コントラスト強化）
-        const processedBlob=await preprocessImage(file);
-        const result=await Tesseract.recognize(processedBlob,'jpn',{
-          logger:m=>{
-            if(m.status==='recognizing text'){
-              statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中 '+(m.progress*100).toFixed(0)+'%...';
-            }
-          },
-          tessedit_pageseg_mode:'6',
-          tessedit_ocr_engine_mode:'1'
+        statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
+        const base64=dataUrl.split(',')[1];
+        const res=await fetch('https://nyanlog.mahito-ai.workers.dev',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({image:base64})
         });
-        const fullText=result.data.text;
-        if(fullText&&fullText.trim().length>0)data=parseReceiptText(fullText);
+        const json=await res.json();
+        const fullText=json.responses&&json.responses[0]&&json.responses[0].fullTextAnnotation
+          ?json.responses[0].fullTextAnnotation.text
+          :(json.responses&&json.responses[0]&&json.responses[0].textAnnotations
+            ?json.responses[0].textAnnotations[0].description:'');
+        if(fullText)data=parseReceiptText(fullText);
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
