@@ -1108,9 +1108,7 @@ async function processImage(file){
           body:JSON.stringify({image:base64})
         });
         const json=await res.json();
-        // デバッグ表示
-        if(json.error){statusTextEl.textContent='Worker Error: '+JSON.stringify(json.error);return;}
-        if(json.responses&&json.responses[0]&&json.responses[0].error){statusTextEl.textContent='Vision Error: '+JSON.stringify(json.responses[0].error);return;}
+        if(json.error||( json.responses&&json.responses[0]&&json.responses[0].error))throw new Error('Vision API error');
         const fullText=json.responses&&json.responses[0]&&json.responses[0].fullTextAnnotation
           ?json.responses[0].fullTextAnnotation.text
           :(json.responses&&json.responses[0]&&json.responses[0].textAnnotations
