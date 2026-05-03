@@ -438,18 +438,13 @@
   .cat-detail-icon { font-size: 2rem; }
   .cat-detail-title { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; flex: 1; }
   .cat-detail-total { font-size: 1.1rem; font-weight: 800; color: #667eea; }
-  .cat-detail-row { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid #f5f5fa; gap: 12px; }
+  .cat-detail-row { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #f5f5fa; gap: 10px; }
   .cat-detail-row:last-child { border-bottom: none; }
-  .cat-detail-date { font-size: 0.85rem; color: #999; white-space: nowrap; min-width: 60px; }
-  .cat-detail-info { flex: 1; min-width: 0; }
-  .cat-detail-shop { font-size: 1rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cat-detail-memo { font-size: 0.82rem; color: #aaa; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cat-detail-amount { font-size: 1.05rem; font-weight: 800; white-space: nowrap; }
+  .cat-detail-date { font-size: 0.82rem; color: #aaa; white-space: nowrap; min-width: 36px; }
+  .cat-detail-shop { flex: 1; font-size: 0.95rem; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat-detail-amount { font-size: 1rem; font-weight: 800; white-space: nowrap; }
   .cat-detail-amount.expense { color: #1a1a2e; }
   .cat-detail-amount.income { color: #16a34a; }
-  .cat-detail-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 3px; display: inline-block; }
-  .cat-detail-badge.expense { background: #f0f0ff; color: #667eea; }
-  .cat-detail-badge.income { background: #dcfce7; color: #16a34a; }
   .cat-detail-empty { text-align: center; padding: 40px 20px; color: #bbb; font-size: 0.95rem; }
 </style>
 </head>
@@ -1354,12 +1349,8 @@ function openCatDetail(cat, catEntries){
       const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
       return `<div class="cat-detail-row">
         <div class="cat-detail-date">${dateStr}</div>
-        <div class="cat-detail-info">
-          <div class="cat-detail-shop">${e.shop||'—'}</div>
-          ${e.items?`<div class="cat-detail-memo">🛍 ${e.items}</div>`:''}
-          <span class="cat-detail-badge ${isIncome?'income':'expense'}">${isIncome?'💰 入金':'💸 支出'}</span>
-        </div>
-        <div class="cat-detail-amount ${isIncome?'income':'expense'}">${isIncome?'+':''}${fmt(e.amount)}</div>
+        <div class="cat-detail-shop">${e.shop||e.items||'—'}</div>
+        <div class="cat-detail-amount ${isIncome?'income':'expense'}">${isIncome?'+':'−'}${fmt(e.amount)}</div>
       </div>`;
     }).join('');
   }
