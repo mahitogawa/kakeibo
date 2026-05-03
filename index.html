@@ -1108,12 +1108,8 @@ async function processImage(file){
           body:JSON.stringify({image:base64})
         });
         const json=await res.json();
-        if(json.error||( json.responses&&json.responses[0]&&json.responses[0].error))throw new Error('Vision API error');
-        const fullText=json.responses&&json.responses[0]&&json.responses[0].fullTextAnnotation
-          ?json.responses[0].fullTextAnnotation.text
-          :(json.responses&&json.responses[0]&&json.responses[0].textAnnotations
-            ?json.responses[0].textAnnotations[0].description:'');
-        if(fullText)data=parseReceiptText(fullText);
+        if(json.error)throw new Error('Vision API error');
+        if(json.text)data=parseReceiptText(json.text);
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
@@ -1219,9 +1215,7 @@ function parseReceiptText(text){
       if(name.length>=2&&price>=50&&price<50000)items.push({name,price});
     }
   }
-  const memo=items.length>0
-    ?items.map(i=>`${i.name} ¥${i.price}`).join('\n')
-    :lines.slice(0,6).join(' / ').replace(/^[\-－—―\s]+/,'');
+  const memo=text.replace(/\n/g,' / ');
   return {date,shop,total,items,rawMemo:memo,payMethod};
 }
 function showOcrResult(data){
