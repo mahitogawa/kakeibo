@@ -1138,7 +1138,7 @@ function parseReceiptText(text){
   }
   // 見つからなければ最大の数値を合計とみなす
   if(!total){
-    const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,'')));[];});
+    const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,''))):[];});
     if(nums.length>0)total=Math.max(...nums);
   }
   // 店名（数字で始まらない最初の行）
