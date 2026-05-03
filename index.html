@@ -1209,16 +1209,19 @@ function parseReceiptText(text){
   // 支払い方法を検出
   const payMethod=text.match(/クレジット|カード|VISA|Master|電子マネー|Suica|PayPay|交通系/i)?'クレジット':'現金';
   // 商品行を抽出（価格で終わる行・合計系除外）
-  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|レジ袋|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員/;
+  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|レジ袋|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員|クレジット|VISA|Master|カード|AID|取引|区分|一括/;
   const items=[];
   for(const line of lines){
     if(skipWords.test(line))continue;
+    if(/\*{3,}/.test(line))continue; // クレカ番号マスク行を除外
+    if(/^[\\¥￥\s\d,，]+$/.test(line))continue; // 数字・記号だけの行を除外
     // 行末に金額パターン（¥NNN または NNN軽/減）
     const m=line.match(/^(.{2,}?)\s+[¥￥]?(\d{2,6})[軽減*＊]?$/);
     if(m){
-      const name=m[1].replace(/^[\-－—―◎@\s]+/,'').trim();
+      const name=m[1].replace(/^[\-－—―◎@◉\s]+/,'').trim();
       const price=parseInt(m[2]);
-      if(name.length>0&&price>0&&price<100000)items.push({name,price});
+      // 名前が2文字以上・価格が妥当な範囲
+      if(name.length>=2&&price>=10&&price<50000)items.push({name,price});
     }
   }
   const memo=items.length>0
