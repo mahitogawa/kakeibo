@@ -1167,12 +1167,19 @@ function preprocessImage(file){
 function parseReceiptText(text){
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
   let total=null;
-  // パターン1: 合計・小計・計 の行
+  // パターン1: 支払金額・お支払い合計（最優先）
   for(const line of lines){
-    const m=line.match(/[合小]?計\s*[¥￥\\]?\s*([\d,，]+)/);
+    const m=line.match(/支払[金額い合計]*\s*[¥￥\\]?\s*([\d,，]+)/);
     if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
   }
-  // パターン2: ¥マーク付きの数字（最大値）
+  // パターン2: 合計・小計・計 の行
+  if(!total){
+    for(const line of lines){
+      const m=line.match(/[合小]?計\s*[¥￥\\]?\s*([\d,，]+)/);
+      if(m){total=parseInt(m[1].replace(/[,，]/g,''));break;}
+    }
+  }
+  // パターン3: ¥マーク付きの数字の最大値
   if(!total){
     const yenNums=[];
     for(const line of lines){
@@ -1181,7 +1188,7 @@ function parseReceiptText(text){
     }
     if(yenNums.length>0)total=Math.max(...yenNums);
   }
-  // パターン3: 3桁以上の数字の最大値
+  // パターン4: 3桁以上の数字の最大値
   if(!total){
     const nums=lines.flatMap(l=>{const m=l.match(/[\d,，]{3,}/g);return m?m.map(n=>parseInt(n.replace(/[,，]/g,''))):[];});
     const valid=nums.filter(n=>n>0&&n<1000000);
