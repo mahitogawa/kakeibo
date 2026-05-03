@@ -1101,12 +1101,16 @@ async function processImage(file){
       // フォールバック: Tesseract.js（ブラウザ内OCR・APIキー不要）
       if(!data){
         statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中（初回は少し時間がかかります）...';
-        const result=await Tesseract.recognize(file,'jpn',{
+        // 画像をcanvasで前処理（グレースケール＋コントラスト強化）
+        const processedBlob=await preprocessImage(file);
+        const result=await Tesseract.recognize(processedBlob,'jpn',{
           logger:m=>{
             if(m.status==='recognizing text'){
               statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中 '+(m.progress*100).toFixed(0)+'%...';
             }
-          }
+          },
+          tessedit_pageseg_mode:'6',
+          tessedit_ocr_engine_mode:'1'
         });
         const fullText=result.data.text;
         if(fullText&&fullText.trim().length>0)data=parseReceiptText(fullText);
@@ -1127,6 +1131,36 @@ async function processImage(file){
     }
   };
   reader.readAsDataURL(file);
+}
+// レシート画像前処理：グレースケール＋コントラスト強化
+function preprocessImage(file){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      // 縦長レシートは幅を固定してリサイズ
+      const maxW=1200;
+      const scale=img.width>maxW?maxW/img.width:1;
+      canvas.width=img.width*scale;
+      canvas.height=img.height*scale;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      // グレースケール＋コントラスト強化
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const d=imageData.data;
+      for(let i=0;i<d.length;i+=4){
+        const gray=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+        // コントラスト強化（二値化気味に）
+        const enhanced=gray<128?Math.max(0,gray-40):Math.min(255,gray+40);
+        d[i]=d[i+1]=d[i+2]=enhanced;
+      }
+      ctx.putImageData(imageData,0,0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob=>resolve(blob),'image/png');
+    };
+    img.src=url;
+  });
 }
 function parseReceiptText(text){
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
