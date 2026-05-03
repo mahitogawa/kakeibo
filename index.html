@@ -471,8 +471,8 @@
       ホーム画面から起動すると秘密URLが失われることがあります。<br>
       Safariの設定タブに表示されている<strong>秘密URL</strong>をコピーして貼り付けてください。
     </div>
-    <input class="reconnect-input" id="reconnectInput" type="url"
-      placeholder="https://mahitogawa.github.io/kakeibo/#..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="reconnect-input" id="reconnectInput" type="text"
+      placeholder="https://mahitogawa.github.io/kakeibo/#..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <div class="reconnect-error" id="reconnectError">URLが正しくありません。#以降のキーを含むURLを貼り付けてください。</div>
     <button class="reconnect-btn" id="reconnectBtn">✅ 接続する</button>
     <button class="reconnect-new" id="reconnectNewBtn">初めて使う（新規データを作成）</button>
@@ -803,14 +803,18 @@ function initUserKey(){ return window._userKey; }
   // 接続ボタン
   document.getElementById('reconnectBtn').addEventListener('click', function(){
     var val = document.getElementById('reconnectInput').value.trim();
-    var match = val.match(/#([0-9a-f]{16,})/i);
     var errEl = document.getElementById('reconnectError');
-    if(!match){
+    // URLのハッシュ部分 or キーそのものを受け付ける
+    var key = '';
+    var matchHash = val.match(/#([0-9a-f]{16,})/i);
+    var matchKey  = val.match(/^([0-9a-f]{16,})$/i);
+    if(matchHash)      key = matchHash[1];
+    else if(matchKey)  key = matchKey[1];
+    if(!key){
       errEl.style.display = 'block';
       return;
     }
     errEl.style.display = 'none';
-    var key = match[1];
     localStorage.setItem(window._LS_KEY, key);
     location.href = location.pathname + '#' + key;
   });
