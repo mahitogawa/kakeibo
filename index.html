@@ -771,37 +771,59 @@
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
 (function(){
   var LS_KEY = 'nyanlog_userkey';
+  var CK_KEY = 'nyanlog_key'; // Cookie名（localStorageより消えにくい）
+
+  // キーをlocalStorage+Cookieの両方に保存（二重保存で耐久性UP）
+  function saveKey(k){
+    try{ localStorage.setItem(LS_KEY, k); }catch(e){}
+    try{ document.cookie = CK_KEY+'='+k+'; max-age=31536000; path=/; SameSite=Strict'; }catch(e){}
+  }
+
+  // localStorage → Cookie の順で復元
+  function loadKey(){
+    var k='';
+    try{ k=localStorage.getItem(LS_KEY)||''; }catch(e){}
+    if(!k||k.length<16){
+      try{
+        var m=document.cookie.match(new RegExp('(?:^|; )'+CK_KEY+'=([0-9a-f]{16,})'));
+        if(m) k=m[1];
+      }catch(e){}
+    }
+    return k;
+  }
+
   var key = location.hash.replace('#','');
   // iOSのスタンドアロン(PWA)モード判定
   var isStandalone = (window.navigator.standalone === true) ||
                      window.matchMedia('(display-mode: standalone)').matches;
 
   if(key && key.length >= 16){
-    // ハッシュあり → localStorageに保存してそのまま使う
-    localStorage.setItem(LS_KEY, key);
+    // ハッシュあり → localStorage+Cookieに保存してそのまま使う
+    saveKey(key);
     window._userKey = key;
   } else {
-    // ハッシュなし → localStorageから復元を試みる
-    key = localStorage.getItem(LS_KEY) || '';
+    // ハッシュなし → localStorage/Cookieから復元を試みる
+    key = loadKey();
     if(key && key.length >= 16){
-      // localStorageにあった → URLを復元
+      // 復元成功 → URLを復元
       history.replaceState(null,'',location.pathname+'#'+key);
       window._userKey = key;
     } else if(isStandalone){
-      // PWAモードかつlocalStorageにもない → 再接続モーダルを表示（データ消失防止）
+      // PWAモードかつどこにもない → 再接続モーダルを表示（データ消失防止）
       window._userKey = null; // 後でモーダルで設定
     } else {
       // 通常ブラウザで初回 → 新規キー生成
       var arr = new Uint8Array(16);
       crypto.getRandomValues(arr);
       key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-      localStorage.setItem(LS_KEY, key);
+      saveKey(key);
       history.replaceState(null,'',location.pathname+'#'+key);
       window._userKey = key;
     }
   }
   window._needReconnect = (window._userKey === null);
   window._LS_KEY = LS_KEY;
+  window._saveKey = saveKey; // 再接続モーダルから使えるように公開
 })();
 
 function initUserKey(){ return window._userKey; }
@@ -828,7 +850,7 @@ function initUserKey(){ return window._userKey; }
       return;
     }
     errEl.style.display = 'none';
-    localStorage.setItem(window._LS_KEY, key);
+    window._saveKey(key);
     location.href = location.pathname + '#' + key;
   });
 
@@ -838,7 +860,7 @@ function initUserKey(){ return window._userKey; }
     var arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
     var key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-    localStorage.setItem(window._LS_KEY, key);
+    window._saveKey(key);
     location.href = location.pathname + '#' + key;
   });
 })();
