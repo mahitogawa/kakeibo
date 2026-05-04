@@ -1513,12 +1513,19 @@ function openCatDetail(cat, catEntries){
       const isIncome=e.type==='収入';
       const d=new Date(e.date+'T00:00:00');
       const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
-      return `<div class="cat-detail-row">
+      return `<div class="cat-detail-row" data-id="${e.id}" style="cursor:pointer">
         <div class="cat-detail-date">${dateStr}</div>
         <div class="cat-detail-shop">${e.shop||e.items||'—'}</div>
         <div class="cat-detail-amount ${isIncome?'income':'expense'}">${isIncome?'+':'−'}${fmt(e.amount)}</div>
+        <div style="color:#aaa;font-size:1rem;padding-left:4px">›</div>
       </div>`;
     }).join('');
+    list.querySelectorAll('.cat-detail-row[data-id]').forEach(row=>{
+      row.addEventListener('click',()=>{
+        overlay.classList.remove('open');
+        setTimeout(()=>openModal(row.dataset.id),150);
+      });
+    });
   }
   overlay.classList.add('open');
 }
