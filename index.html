@@ -1592,7 +1592,15 @@ function renderSettings(){
         <button class="btn-del" data-id="${s.id}">🗑</button>
       </div>`).join('');
     list.querySelectorAll('.btn-del').forEach(btn=>{
-      btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
+      btn.addEventListener('click',async()=>{
+        await deleteShop(btn.dataset.id);
+        // 編集モード中だったらリセット
+        window._editingShopId=null;
+        document.getElementById('newShopName').value='';
+        const addBtn=document.getElementById('addShopBtn');
+        addBtn.textContent='＋ 登録する';addBtn.style.background='';
+        renderSettings();
+      });
     });
     list.querySelectorAll('.btn-edit-shop').forEach(btn=>{
       btn.addEventListener('click',()=>{
