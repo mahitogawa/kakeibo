@@ -1142,7 +1142,8 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
-      if(data.payMethod)selectPayment(data.payMethod);
+      // 支払い方法はOCRで自動変更しない（現金デフォルト、ユーザーが手動選択）
+      // if(data.payMethod)selectPayment(data.payMethod);
       if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
       else if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>`${i.name} ¥${i.price}`).join('\n');}
       showOcrResult(data);
@@ -1587,10 +1588,24 @@ function renderSettings(){
       <div class="settings-row">
         <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
         <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
+        <button class="btn-edit-shop" data-id="${s.id}" data-name="${s.name.replace(/"/g,'&quot;')}" data-cat="${s.cat}" style="background:none;border:none;font-size:1.2rem;padding:6px;cursor:pointer;color:#667eea">✏️</button>
         <button class="btn-del" data-id="${s.id}">🗑</button>
       </div>`).join('');
     list.querySelectorAll('.btn-del').forEach(btn=>{
       btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
+    });
+    list.querySelectorAll('.btn-edit-shop').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.getElementById('newShopName').value=btn.dataset.name;
+        const catSel=document.getElementById('newShopCat');
+        if(catSel) catSel.value=btn.dataset.cat;
+        window._editingShopId=btn.dataset.id;
+        const addBtn=document.getElementById('addShopBtn');
+        addBtn.textContent='✅ 更新する';
+        addBtn.style.background='#667eea';
+        document.getElementById('newShopName').focus();
+        document.getElementById('newShopName').scrollIntoView({behavior:'smooth',block:'center'});
+      });
     });
   }
 
@@ -1675,16 +1690,27 @@ document.getElementById('addCatBtn').addEventListener('click',async()=>{
   renderSettings();
 });
 
+window._editingShopId = null;
 document.getElementById('addShopBtn').addEventListener('click',async()=>{
   const name=document.getElementById('newShopName').value.trim();
   const cat=document.getElementById('newShopCat').value;
   if(!name){alert('店名を入力してください');return;}
-  if(shops.find(s=>s.name===name)){alert('すでに登録されています');return;}
-  await saveShop({name,cat},null);
-  document.getElementById('newShopName').value='';
   const btn=document.getElementById('addShopBtn');
-  btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
-  setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
+  if(window._editingShopId){
+    // 更新モード
+    await saveShop({name,cat},window._editingShopId);
+    window._editingShopId=null;
+    document.getElementById('newShopName').value='';
+    btn.textContent='✅ 更新しました！';btn.style.background='#22c55e';
+    setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
+  } else {
+    // 新規登録モード
+    if(shops.find(s=>s.name===name)){alert('すでに登録されています');return;}
+    await saveShop({name,cat},null);
+    document.getElementById('newShopName').value='';
+    btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
+    setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
+  }
 });
 document.getElementById('resetFormBtn').addEventListener('click',()=>{
   if(!confirm('入力フォームの内容をリセットしますか？'))return;
