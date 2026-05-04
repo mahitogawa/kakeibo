@@ -1658,6 +1658,7 @@ function renderCategorySettings(){
         <div class="cat-row-color" style="background:${c.color}"></div>
         <div class="settings-row-name">${c.key}</div>
       </div>
+      <button class="btn-edit-cat" data-idx="${i}" style="background:none;border:none;font-size:1.2rem;padding:6px;cursor:pointer;color:#667eea">✏️</button>
       <button class="btn-del" data-idx="${i}">🗑</button>
     </div>`).join('');
   list.querySelectorAll('.btn-del').forEach(btn=>{
@@ -1666,7 +1667,29 @@ function renderCategorySettings(){
       if(!confirm(`「${CAT_LIST[idx].key}」を削除しますか？`))return;
       CAT_LIST.splice(idx,1);
       await saveCategories();
+      // 編集中だったらリセット
+      window._editingCatIdx=null;
+      document.getElementById('newCatName').value='';
+      document.getElementById('newCatIcon').value='🏷';
+      const addBtn=document.getElementById('addCatBtn');
+      addBtn.textContent='＋ カテゴリを追加';addBtn.style.background='';
       renderSettings();
+    });
+  });
+  list.querySelectorAll('.btn-edit-cat').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx);
+      const cat=CAT_LIST[idx];
+      document.getElementById('newCatIcon').value=cat.icon;
+      document.getElementById('newCatName').value=cat.key;
+      // カラーパレットも該当色を選択
+      selectedCatColor=cat.color;
+      renderColorPalette();
+      window._editingCatIdx=idx;
+      const addBtn=document.getElementById('addCatBtn');
+      addBtn.textContent='✅ 更新する';addBtn.style.background='#667eea';
+      document.getElementById('newCatName').focus();
+      document.getElementById('newCatName').scrollIntoView({behavior:'smooth',block:'center'});
     });
   });
 }
@@ -1682,18 +1705,32 @@ document.getElementById('budgetSaveBtn').addEventListener('click',()=>{
   renderSummary();
 });
 
+window._editingCatIdx = null;
 document.getElementById('addCatBtn').addEventListener('click',async()=>{
   const icon=document.getElementById('newCatIcon').value.trim()||'🏷';
   const name=document.getElementById('newCatName').value.trim();
   if(!name){alert('カテゴリ名を入力してください');return;}
-  if(CAT_LIST.find(c=>c.key===name)){alert('すでに登録されています');return;}
-  CAT_LIST.push({key:name,icon,color:selectedCatColor});
-  await saveCategories();
-  document.getElementById('newCatName').value='';
-  document.getElementById('newCatIcon').value='🏷';
   const btn=document.getElementById('addCatBtn');
-  btn.textContent='✅ 追加しました！';btn.style.background='#22c55e';
-  setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
+  if(window._editingCatIdx!==null){
+    // 更新モード
+    const idx=window._editingCatIdx;
+    CAT_LIST[idx]={key:name,icon,color:selectedCatColor};
+    window._editingCatIdx=null;
+    await saveCategories();
+    document.getElementById('newCatName').value='';
+    document.getElementById('newCatIcon').value='🏷';
+    btn.textContent='✅ 更新しました！';btn.style.background='#22c55e';
+    setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
+  } else {
+    // 新規追加モード
+    if(CAT_LIST.find(c=>c.key===name)){alert('すでに登録されています');return;}
+    CAT_LIST.push({key:name,icon,color:selectedCatColor});
+    await saveCategories();
+    document.getElementById('newCatName').value='';
+    document.getElementById('newCatIcon').value='🏷';
+    btn.textContent='✅ 追加しました！';btn.style.background='#22c55e';
+    setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
+  }
   renderSettings();
 });
 
