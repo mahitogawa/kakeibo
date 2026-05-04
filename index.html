@@ -145,14 +145,14 @@
     padding-left: 10px; border-left: 3px solid #667eea;
   }
   .form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 14px 16px; border: 2px solid #dde1f0;
+    width: 100%; padding: 14px 16px; border: 2px solid #c8ccf0;
     border-radius: 12px; font-size: 1.1rem; font-family: var(--font);
-    color: #1a1a2e; background: #f5f6fc; transition: border-color 0.2s; outline: none;
+    color: #1a1a2e; background: #eeeeff; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
   }
   .form-group input[type="date"] {
     font-size: 1.5rem; font-weight: 700; padding: 14px 16px; min-height: 60px; text-align: center;
   }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: white; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: #eeeeff; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .form-group textarea { resize: none; height: 80px; }
   .category-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .category-chips::-webkit-scrollbar { display: none; }
@@ -217,7 +217,7 @@
 
   /* 予算設定 */
   .budget-input-wrap { display: flex; gap: 8px; align-items: center; padding: 14px 16px; }
-  .budget-input { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1.1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; -moz-appearance: textfield; }
+  .budget-input { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1.1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; -moz-appearance: textfield; transition: border-color 0.2s, box-shadow 0.2s; }
   .budget-input::-webkit-inner-spin-button, .budget-input::-webkit-outer-spin-button { -webkit-appearance: none; }
   .budget-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .budget-save-btn { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); white-space: nowrap; }
@@ -359,19 +359,19 @@
   }
   .amount-hero-display { display: none; }
   .amount-hero-input {
-    flex: 1; padding: 10px 12px; border: 2.5px solid #667eea;
+    flex: 1; padding: 10px 12px; border: 2px solid #c8ccf0;
     border-radius: 12px; font-size: 1.7rem; font-weight: 700;
-    font-family: var(--font); color: #1a1a2e; background: white;
+    font-family: var(--font); color: #1a1a2e; background: #eeeeff;
     text-align: right; outline: none; min-width: 0;
-    transition: border-color 0.2s; -moz-appearance: textfield;
+    transition: border-color 0.2s, box-shadow 0.2s; -moz-appearance: textfield;
   }
   .amount-hero-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .amount-hero-input::-webkit-inner-spin-button,
   .amount-hero-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
   /* ピッカーボタン */
-  .picker-btn { width: 100%; padding: 14px 16px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1.05rem; font-weight: 700; background: #f5f6ff; color: #667eea; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; transition: all 0.2s; font-family: var(--font); }
-  .picker-btn.has-val { border-color: #667eea; background: #eeeeff; color: #1a1a2e; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .picker-btn { width: 100%; padding: 14px 16px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1.05rem; font-weight: 700; background: #eeeeff; color: #667eea; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; transition: all 0.2s; font-family: var(--font); }
+  .picker-btn.has-val { border-color: #667eea; color: #1a1a2e; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .picker-btn .picker-arrow { color: #a0a8e8; font-size: 1.3rem; margin-left: 8px; flex-shrink: 0; }
   .picker-btn.has-val .picker-arrow { color: #667eea; }
 
@@ -414,17 +414,17 @@
   .setting-action-btn.red    { color: #ef4444; border-color: #fca5a5; background: #fff1f1; }
   .add-shop-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
   .add-shop-row { display: flex; gap: 10px; margin-bottom: 10px; }
-  .add-shop-input { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; }
+  .add-shop-input { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
   .add-shop-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-  .add-shop-select { padding: 12px 10px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #555; background: white; outline: none; cursor: pointer; }
+  .add-shop-select { padding: 12px 10px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
   .btn-add { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); }
 
   /* カテゴリ管理 */
   .add-cat-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
   .add-cat-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-  .add-cat-emoji { width: 54px; padding: 11px 6px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: var(--font); outline: none; background: white; cursor: pointer; }
+  .add-cat-emoji { width: 54px; padding: 11px 6px; border: 2px solid #c8ccf0; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: var(--font); outline: none; background: #eeeeff; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
   .add-cat-emoji:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-  .add-cat-name { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; }
+  .add-cat-name { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 10px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
   .add-cat-name:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; flex-shrink: 0; }
