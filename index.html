@@ -89,21 +89,11 @@
   }
   .upload-area:hover { border-color: #667eea; background: #f0f0ff; }
   .upload-area .receipt-illust {
-    flex-shrink: 0; width: 52px; height: 78px;
-    background: #f0f0ff; border: 2px solid #c5cae9;
-    border-radius: 5px; position: relative;
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: flex-start; padding-top: 10px; gap: 5px;
+    flex-shrink: 0; width: 64px; height: 64px;
+    background: #eeeeff; border: 2px solid #c8ccf0;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .upload-area .receipt-illust::after {
-    content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 26px solid transparent; border-right: 26px solid transparent;
-    border-top: 10px solid #c5cae9;
-  }
-  .receipt-line { width: 34px; height: 3px; border-radius: 2px; background: #c5cae9; }
-  .receipt-line.short { width: 22px; }
-  .receipt-line.price { width: 30px; background: #667eea; opacity: 0.5; }
   .upload-text { text-align: left; }
   .upload-area .label { font-size: 1.1rem; font-weight: 700; color: #444; }
   .upload-area .sublabel { font-size: 0.9rem; color: #999; margin-top: 6px; line-height: 1.5; }
@@ -525,9 +515,10 @@
     <div class="upload-area" id="uploadArea">
       <input type="file" id="fileInput" accept="image/*" capture="environment">
       <div class="receipt-illust">
-        <div class="receipt-line"></div><div class="receipt-line short"></div>
-        <div class="receipt-line"></div><div class="receipt-line short"></div>
-        <div class="receipt-line price"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
       </div>
       <div class="upload-text">
         <div class="label">📷 レシートを撮影</div>
