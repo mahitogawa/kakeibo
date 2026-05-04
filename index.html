@@ -1200,13 +1200,13 @@ function parseReceiptText(text){
   // 支払い方法を検出
   const payMethod=text.match(/クレジット|カード|VISA|Master|電子マネー|Suica|PayPay|交通系/i)?'クレジット':'現金';
   // 商品行を抽出（価格で終わる行・合計系除外）
-  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員|クレジット|VISA|Master|カード|AID|取引|区分|一括|丁目|番地|都|道|府|県|市|区|町|村|ありがとう|またのご|領収|お客様|控え|店長|営業時間|対象|消費税/;
+  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員|クレジット|VISA|Master|カード|AID|取引|区分|一括|丁目|番地|都|道|府|県|市|区|町|村|ありがとう|またのご|領収|お客様|控え|店長|営業時間|対象|消費税|商品数|買上|お釣|おつり|レシート|小売/;
   const items=[];
   let prevLine='';
   let prevPrevLine='';
   for(const line of lines){
-    // 価格のみの行（¥NNN軽 など）→ 品名を探す
-    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+    // 価格のみの行（¥NNN軽 ・ NNN※ など）→ 品名を探す
+    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減※]?\s*$/);
     if(priceOnly){
       const price=parseInt(priceOnly[1].replace(/[,，]/g,''));
       // prevLineが@数量行（@145 × 2点 など）なら2行前が品名
@@ -1216,8 +1216,8 @@ function parseReceiptText(text){
         items.push({name:cleanPrev,price});
       }
     } else {
-      // 同一行に品名＋価格のパターン
-      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+      // 同一行に品名＋価格のパターン（末尾に※軽減なども対応）
+      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*[軽減※]?\s*$/);
       if(m){
         const name=m[1].replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
         const price=parseInt(m[2].replace(/[,，]/g,''));
