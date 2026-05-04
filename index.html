@@ -1142,8 +1142,7 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
-      // 支払い方法はOCRで自動変更しない（現金デフォルト、ユーザーが手動選択）
-      // if(data.payMethod)selectPayment(data.payMethod);
+      if(data.payMethod)selectPayment(data.payMethod);
       if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
       else if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>`${i.name} ¥${i.price}`).join('\n');}
       showOcrResult(data);
