@@ -1206,8 +1206,8 @@ function parseReceiptText(text){
   for(const line of lines){
     // 価格のみの行（¥NNN軽 など）→ 前の行が品名
     const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
-    // @単価×N点 ¥合計軽 パターン（FamilyMart）→ 前の行が品名
-    const atQtyPrice=line.match(/^[@＠][\d,，.]+.{0,6}\d+[点個本]\s*[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+    // @単価×N点 ¥合計軽 パターン（FamilyMart）→ 前の行が品名（シンプル版：@で始まり¥で価格終わり）
+    const atQtyPrice=/^[@＠]/.test(line)?line.match(/[¥￥\\]\s*([\d,，]+)\s*[軽減]?\s*$/):null;
     if(priceOnly||atQtyPrice){
       const m2=priceOnly||atQtyPrice;
       const price=parseInt(m2[1].replace(/[,，]/g,''));
