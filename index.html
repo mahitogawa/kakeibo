@@ -1223,7 +1223,7 @@ function parseReceiptText(text){
   let prevPrevLine='';
   for(const line of lines){
     // 価格のみの行（¥NNN軽 ・ NNN※ など）→ 品名を探す
-    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減※]?\s*$/);
+    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*(?:[軽減※]\s*[A-Za-z]?)?\s*$/);
     if(priceOnly){
       const price=parseInt(priceOnly[1].replace(/[,，]/g,''));
       // prevLineが@数量行（@145 × 2点 など）なら2行前が品名
@@ -1234,7 +1234,7 @@ function parseReceiptText(text){
       }
     } else {
       // 同一行に品名＋価格のパターン（末尾に※軽減なども対応）
-      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*[軽減※]?\s*$/);
+      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*(?:[軽減※]\s*[A-Za-z]?)?\s*$/);
       if(m){
         const name=m[1].replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
         const price=parseInt(m[2].replace(/[,，]/g,''));
