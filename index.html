@@ -1244,8 +1244,8 @@ function parseReceiptText(text){
     prevPrevLine=prevLine;
     prevLine=line;
   }
-  const memo=items.length>0?items.map(i=>`${i.name} ¥${i.price}`).join('\n'):'';
-  return {date,shop,total,items,rawMemo:memo,payMethod};
+  // rawMemo = 生OCRテキスト全体（何も取りこぼさない）
+  return {date,shop,total,items,rawMemo:text,payMethod};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
