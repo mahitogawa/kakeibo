@@ -1125,8 +1125,9 @@ async function processImage(file){
           body:JSON.stringify({image:base64})
         });
         const json=await res.json();
-        if(json.error)throw new Error('Vision API error');
-        if(json.text)data=parseReceiptText(json.text);
+        if(json.error&&!json.parsed&&!json.text)throw new Error('OCR error');
+        if(json.parsed){data=json.parsed;if(!data.rawMemo&&json.text)data.rawMemo=json.text;}
+        else if(json.text)data=parseReceiptText(json.text);
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
