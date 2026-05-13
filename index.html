@@ -1132,6 +1132,10 @@ async function processImage(file){
         else if(json.text)data=parseReceiptText(json.text);
       }
       if(!data)throw new Error('parse failed');
+      // shop フィールド正規化：AI が store/storeName/shopName で返す場合にも対応
+      if(!data.shop)data.shop=data.store||data.storeName||data.shopName||'';
+      // rawMemo（生OCRテキスト）から店名を再抽出（最終手段）
+      if(!data.shop&&data.rawMemo){const fb=parseReceiptText(data.rawMemo);if(fb.shop)data.shop=fb.shop;}
       if(data.date)document.getElementById('fDate').value=data.date;
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
