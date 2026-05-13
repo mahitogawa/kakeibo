@@ -1130,9 +1130,7 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
-      if(data.payMethod)selectPayment(data.payMethod);
-      if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
-      else if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>`${i.name} ¥${i.price}`).join('\n');}
+      if(data.payMethod)selectPayment(data.payMethod); ¥${i.price}`).join('\n');}
       showOcrResult(data);
       statusEl.className='ai-status done';
       statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
@@ -1339,7 +1337,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
   const date=document.getElementById('fDate').value;
   const shop=document.getElementById('fShop').value.trim();
   const amount=parseInt(document.getElementById('fAmount').value)||0;
-  const items=document.getElementById('fItems').value.trim();
+  const items='';
   if(!date){alert('日付を入力してください');return;}
   if(!shop){alert(selectedType==='収入'?'入金元を入力してください':'購入先を入力してください');return;}
   if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
@@ -1368,7 +1366,7 @@ function resetForm(){
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  ['fShop','fItems','fAmount'].forEach(id=>document.getElementById(id).value='');
+  ['fShop','fAmount'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
   document.getElementById('catPickerVal').textContent='📂 タップして選択';
@@ -1444,7 +1442,6 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   // フォームに値をセット
   document.getElementById('fDate').value = e.date;
   document.getElementById('fShop').value = e.shop;
-  document.getElementById('fItems').value = e.items||'';
   document.getElementById('fAmount').value = e.amount;
   document.getElementById('amountDisplay').textContent = '¥'+Number(e.amount).toLocaleString('ja-JP');
   selectCategory(e.category);
