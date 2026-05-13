@@ -1095,77 +1095,73 @@ uploadArea.addEventListener('dragleave',()=>{uploadArea.style.borderColor='';});
 uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.style.borderColor='';if(e.dataTransfer.files[0])processImage(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',()=>{if(fileInput.files[0])processImage(fileInput.files[0]);});
 async function processImage(file){
-  const reader=new FileReader();
-  reader.onload=async(ev)=>{
-    const dataUrl=ev.target.result;
-    document.getElementById('receiptImg').src=dataUrl;
-    document.getElementById('receiptPreview').classList.add('visible');
-    document.getElementById('ocrResult').classList.remove('visible');
-    const statusEl=document.getElementById('aiStatus');
-    const statusTextEl=document.getElementById('aiStatusText');
-    statusEl.className='ai-status analyzing';
-    statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
-    document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-    try{
-      let data=null;
-      // Cowork AI が使える場合は優先（精度高）
-      if(window.cowork&&window.cowork.askClaude){
-        try{
-          const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:\n{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
-          const result=await window.cowork.askClaude(prompt,[dataUrl]);
-          const jsonMatch=result.match(/\{[\s\S]*\}/);
-          if(jsonMatch)data=JSON.parse(jsonMatch[0]);
-        }catch(e2){}
-      }
-      // フォールバック: Cloudflare Worker経由でGoogle Vision API
-      if(!data){
-        statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
-        // 送信前に画像を圧縮（1000px幅・グレースケール・JPEG0.7）→ 3〜10MB→約150KBに削減
-        const compressedUrl=await new Promise(res=>{
-          const img=new Image();
-          img.onload=()=>{
-            const maxW=1000,scale=img.width>maxW?maxW/img.width:1;
-            const c=document.createElement('canvas');
-            c.width=img.width*scale;c.height=img.height*scale;
-            const ctx=c.getContext('2d');
-            ctx.drawImage(img,0,0,c.width,c.height);
-            const d=ctx.getImageData(0,0,c.width,c.height);
-            for(let i=0;i<d.data.length;i+=4){const g=d.data[i]*0.299+d.data[i+1]*0.587+d.data[i+2]*0.114;d.data[i]=d.data[i+1]=d.data[i+2]=g;}
-            ctx.putImageData(d,0,0);
-            res(c.toDataURL('image/jpeg',0.7));
-          };
-          img.src=dataUrl;
-        });
-        const base64=compressedUrl.split(',')[1];
-        const res=await fetch('https://nyanlog.mahito-ai.workers.dev',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({image:base64})
-        });
-        const json=await res.json();
-        if(json.error&&!json.parsed&&!json.text)throw new Error('OCR error');
-        if(json.parsed){data=json.parsed;if(!data.rawMemo&&json.text)data.rawMemo=json.text;}
-        else if(json.text)data=parseReceiptText(json.text);
-      }
-      if(!data)throw new Error('parse failed');
-      // shop フィールド正規化：AI が store/storeName/shopName で返す場合にも対応
-      if(!data.shop)data.shop=data.store||data.storeName||data.shopName||'';
-      // rawMemo（生OCRテキスト）から店名を再抽出（最終手段）
-      if(!data.shop&&data.rawMemo){const fb=parseReceiptText(data.rawMemo);if(fb.shop)data.shop=fb.shop;}
-      if(data.date)document.getElementById('fDate').value=data.date;
-      if(data.shop)document.getElementById('fShop').value=data.shop;
-      if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
-      if(data.category)selectCategory(data.category);
-      if(data.payMethod)selectPayment(data.payMethod);
-      showOcrResult(data);
-      statusEl.className='ai-status done';
-      statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
-    }catch(e){
-      statusEl.className='ai-status error';
-      statusTextEl.textContent='⚠️ 手動で入力してください。';
+  // ① BlobURL でプレビューを即座に表示（FileReader不要・遅延ゼロ）
+  const blobUrl=URL.createObjectURL(file);
+  document.getElementById('receiptImg').src=blobUrl;
+  document.getElementById('receiptPreview').classList.add('visible');
+  document.getElementById('ocrResult').classList.remove('visible');
+  const statusEl=document.getElementById('aiStatus');
+  const statusTextEl=document.getElementById('aiStatusText');
+  statusEl.className='ai-status analyzing';
+  statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
+  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+  try{
+    let data=null;
+    // Cowork AI が使える場合は優先（DataURLが必要な場合のみ生成）
+    if(window.cowork&&window.cowork.askClaude){
+      try{
+        const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});
+        const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:\n{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
+        const result=await window.cowork.askClaude(prompt,[dataUrl]);
+        const jsonMatch=result.match(/\{[\s\S]*\}/);
+        if(jsonMatch)data=JSON.parse(jsonMatch[0]);
+      }catch(e2){}
     }
-  };
-  reader.readAsDataURL(file);
+    // フォールバック: Cloudflare Worker経由でGoogle Vision API
+    if(!data){
+      statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
+      // ② createImageBitmap で直接1000px幅にリサイズ（GPUデコード・フル解像度展開なし）
+      let base64;
+      try{
+        const bmp=await createImageBitmap(file,{resizeWidth:1000,resizeQuality:'medium'});
+        const c=document.createElement('canvas');
+        c.width=bmp.width;c.height=bmp.height;
+        const ctx=c.getContext('2d');
+        ctx.drawImage(bmp,0,0);
+        bmp.close();
+        const d=ctx.getImageData(0,0,c.width,c.height);
+        for(let i=0;i<d.data.length;i+=4){const g=d.data[i]*0.299+d.data[i+1]*0.587+d.data[i+2]*0.114;d.data[i]=d.data[i+1]=d.data[i+2]=g;}
+        ctx.putImageData(d,0,0);
+        base64=c.toDataURL('image/jpeg',0.7).split(',')[1];
+      }catch(e3){
+        // フォールバック（createImageBitmapオプション非対応環境）
+        const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});
+        base64=dataUrl.split(',')[1];
+      }
+      const res=await fetch('https://nyanlog.mahito-ai.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+      const json=await res.json();
+      if(json.error&&!json.parsed&&!json.text)throw new Error('OCR error');
+      if(json.parsed){data=json.parsed;if(!data.rawMemo&&json.text)data.rawMemo=json.text;}
+      else if(json.text)data=parseReceiptText(json.text);
+    }
+    if(!data)throw new Error('parse failed');
+    // shop フィールド正規化：AI が store/storeName/shopName で返す場合にも対応
+    if(!data.shop)data.shop=data.store||data.storeName||data.shopName||'';
+    // rawMemo（生OCRテキスト）から店名を再抽出（最終手段）
+    if(!data.shop&&data.rawMemo){const fb=parseReceiptText(data.rawMemo);if(fb.shop)data.shop=fb.shop;}
+    if(data.date)document.getElementById('fDate').value=data.date;
+    if(data.shop)document.getElementById('fShop').value=data.shop;
+    if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
+    if(data.category)selectCategory(data.category);
+    if(data.payMethod)selectPayment(data.payMethod);
+    showOcrResult(data);
+    statusEl.className='ai-status done';
+    statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
+  }catch(e){
+    statusEl.className='ai-status error';
+    statusTextEl.textContent='⚠️ 手動で入力してください。';
+  }
+  URL.revokeObjectURL(blobUrl);
 }
 // レシート画像前処理：グレースケール＋コントラスト強化
 function preprocessImage(file){
