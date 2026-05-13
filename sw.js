@@ -1,5 +1,5 @@
 // キャッシュバージョン — 変更するたびに古いキャッシュが消える
-const CACHE_VER = 'kakeibo-v3';
+const CACHE_VER = 'kakeibo-v4';
 
 // アイコン・ライブラリなど変わらないものだけキャッシュ
 const STATIC = [
