@@ -556,13 +556,12 @@
     </div>
     <!-- 金額入力 -->
     <div class="amount-hero-card" id="amountHeroCard">
-      <div class="amount-hero-label" id="amountHeroLabel">💸 支出金額（円）</div>
+      <div class="amount-hero-label" id="amountHeroLabel">💸 支出金額</div>
       <div class="amount-hero-display" id="amountDisplay">¥0</div>
       <input type="number" id="fAmount" class="amount-hero-input" placeholder="0" min="0" inputmode="numeric">
     </div>
 
     <div class="form-card">
-      <h3>✏️ 内容を確認・修正して保存</h3>
       <div class="form-group">
         <label>日付</label>
         <input type="date" id="fDate">
@@ -1066,7 +1065,7 @@ document.querySelectorAll('.type-btn').forEach(btn=>{
       shopLabel.textContent='入金元（振込元・支払い元）';
     } else {
       card.classList.remove('income');
-      label.textContent='💸 支出金額（円）';
+      label.textContent='💸 支出金額';
       catGroup.style.display='';
       payGroup.style.display='';
       shopLabel.textContent='購入先（店名）';
@@ -1367,7 +1366,7 @@ function resetForm(){
   editingEntryId=null; selectedType='支出';
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type==='支出'));
   document.getElementById('amountHeroCard').classList.remove('income');
-  document.getElementById('amountHeroLabel').textContent='💸 支出金額（円）';
+  document.getElementById('amountHeroLabel').textContent='💸 支出金額';
   document.getElementById('categoryGroup').style.display='';
   document.getElementById('payGroup').style.display='';
   document.getElementById('shopLabel').textContent='購入先（店名）';
