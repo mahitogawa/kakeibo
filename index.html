@@ -141,7 +141,9 @@
   }
   .form-group input[type="date"] {
     font-size: 1.5rem; font-weight: 700; padding: 14px 16px; min-height: 60px; text-align: center;
+    -webkit-appearance: none; appearance: none; width: 100%; box-sizing: border-box;
   }
+  .picker-btn { -webkit-appearance: none; appearance: none; box-sizing: border-box; }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: #eeeeff; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
   .form-group textarea { resize: none; height: 80px; }
   .category-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -587,6 +589,10 @@
           <span class="picker-arrow">›</span>
         </button>
       </div>
+      <div class="form-group">
+        <label>メモ</label>
+        <textarea id="fMemo" placeholder="自由にメモ…"></textarea>
+      </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
     </div>
   </div>
@@ -899,8 +905,8 @@ function rebuildCatMaps(){
 }
 rebuildCatMaps();
 
-const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
-const PAY_LIST = [{key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}];
+const PAY_ICONS  = {'クレジット':'💳','現金':'💵','その他':'🏷'};
+const PAY_LIST = [{key:'クレジット',icon:'💳'},{key:'現金',icon:'💵'},{key:'その他',icon:'🏷'}];
 
 // ─── 状態変数 ─────────────────────────────────────────
 let entries=[], shops=[], currentUser=null;
@@ -1343,7 +1349,8 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
   if(!shop){alert(selectedType==='収入'?'入金元を入力してください':'購入先を入力してください');return;}
   if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
   if(!amount){alert('金額を入力してください');return;}
-  const data={date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
+  const memo=document.getElementById('fMemo').value.trim();
+  const data={date,shop,items,memo,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
   await saveEntry(data, editingEntryId||null);
   // 未登録の店名なら自動追加
   if(shop&&!shops.find(s=>s.name===shop)){
@@ -1367,7 +1374,7 @@ function resetForm(){
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  ['fShop','fAmount'].forEach(id=>document.getElementById(id).value='');
+  ['fShop','fAmount','fMemo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
   document.getElementById('catPickerVal').textContent='📂 タップして選択';
@@ -1447,6 +1454,7 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   document.getElementById('amountDisplay').textContent = '¥'+Number(e.amount).toLocaleString('ja-JP');
   selectCategory(e.category);
   selectPayment(e.payment||'現金');
+  document.getElementById('fMemo').value = e.memo||'';
   // 編集モードON
   editingEntryId = e.id;
   const saveBtn = document.getElementById('saveBtn');
