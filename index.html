@@ -1130,7 +1130,7 @@ async function processImage(file){
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
-      if(data.payMethod)selectPayment(data.payMethod); ¥${i.price}`).join('\n');}
+      if(data.payMethod)selectPayment(data.payMethod);
       showOcrResult(data);
       statusEl.className='ai-status done';
       statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
