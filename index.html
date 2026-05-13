@@ -1083,6 +1083,7 @@ document.querySelectorAll('.tab').forEach(tab=>{
 });
 const uploadArea=document.getElementById('uploadArea');
 const fileInput=document.getElementById('fileInput');
+fileInput.addEventListener('click',e=>e.stopPropagation());
 uploadArea.addEventListener('click',()=>fileInput.click());
 uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.style.borderColor='#667eea';});
 uploadArea.addEventListener('dragleave',()=>{uploadArea.style.borderColor='';});
