@@ -589,6 +589,10 @@
         </button>
       </div>
       <div class="form-group">
+        <label>購入品目</label>
+        <textarea id="fItems" placeholder="例：ファミマ・ザ・カレー ¥170&#10;値下 ¥-20" rows="4" style="font-size:0.95rem;line-height:1.7;"></textarea>
+      </div>
+      <div class="form-group">
         <label>メモ</label>
         <textarea id="fMemo" placeholder="自由にメモ…"></textarea>
       </div>
@@ -1359,7 +1363,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
   const date=document.getElementById('fDate').value;
   const shop=document.getElementById('fShop').value.trim();
   const amount=parseInt(document.getElementById('fAmount').value)||0;
-  const items='';
+  const items=document.getElementById('fItems').value.trim();
   if(!date){alert('日付を入力してください');return;}
   if(!shop){alert(selectedType==='収入'?'入金元を入力してください':'購入先を入力してください');return;}
   if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
@@ -1389,7 +1393,7 @@ function resetForm(){
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  ['fShop','fAmount','fMemo'].forEach(id=>document.getElementById(id).value='');
+  ['fShop','fAmount','fMemo','fItems'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
   document.getElementById('catPickerVal').textContent='📂 タップして選択';
@@ -1470,6 +1474,7 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   selectCategory(e.category);
   selectPayment(e.payment||'現金');
   document.getElementById('fMemo').value = e.memo||'';
+  document.getElementById('fItems').value = e.items||'';
   // 編集モードON
   editingEntryId = e.id;
   const saveBtn = document.getElementById('saveBtn');
