@@ -1161,9 +1161,10 @@ async function processImage(file){
     showOcrResult(data);
     // OCR品目をfItemsテキストエリアにも反映
     if(data.items && data.items.length > 0){
-      const itemsText = data.items
-        .map(i => i.name + (i.price ? ' ¥' + i.price : ''))
-        .join('\n');
+      const itemsText = data.items.map(i => {
+        if(typeof i === 'string') return i;
+        return i.name + (i.price ? ' ¥' + i.price : '');
+      }).filter(l => l && l.trim()).join('\n');
       document.getElementById('fItems').value = itemsText;
     }
     statusEl.className='ai-status done';
@@ -1481,7 +1482,11 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   selectCategory(e.category);
   selectPayment(e.payment||'現金');
   document.getElementById('fMemo').value = e.memo||'';
-  document.getElementById('fItems').value = e.items||'';
+  // itemsが配列の場合も文字列に変換
+  const itemsVal = Array.isArray(e.items)
+    ? e.items.map(i => typeof i === 'string' ? i : (i.name||'') + (i.price ? ' ¥'+i.price : '')).filter(l=>l.trim()).join('\n')
+    : (e.items||'');
+  document.getElementById('fItems').value = itemsVal;
   // 編集モードON
   editingEntryId = e.id;
   const saveBtn = document.getElementById('saveBtn');
