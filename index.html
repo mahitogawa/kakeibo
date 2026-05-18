@@ -1159,6 +1159,13 @@ async function processImage(file){
     if(data.category)selectCategory(data.category);
     if(data.payMethod)selectPayment(data.payMethod);
     showOcrResult(data);
+    // OCR品目をfItemsテキストエリアにも反映
+    if(data.items && data.items.length > 0){
+      const itemsText = data.items
+        .map(i => i.name + (i.price ? ' ¥' + i.price : ''))
+        .join('\n');
+      document.getElementById('fItems').value = itemsText;
+    }
     statusEl.className='ai-status done';
     statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
   }catch(e){
