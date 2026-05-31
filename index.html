@@ -1098,7 +1098,7 @@ async function processImage(file){
           if(jsonMatch)data=JSON.parse(jsonMatch[0]);
         }catch(e2){}
       }
-      // フォールバック: Cloudflare Worker経由でGoogle Vision API
+      // フォールバック: Cloudflare Worker経由でGemini OCR
       if(!data){
         statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
         const base64=dataUrl.split(',')[1];
@@ -1108,8 +1108,20 @@ async function processImage(file){
           body:JSON.stringify({image:base64})
         });
         const json=await res.json();
-        if(json.error)throw new Error('Vision API error');
-        if(json.text)data=parseReceiptText(json.text);
+        if(json.error)throw new Error('Worker error: '+json.error);
+        // Workerがparsed（構造化済みJSON）を返す場合は優先使用
+        if(json.parsed){
+          data={
+            shop: json.parsed.store || json.parsed.shop || '',
+            date: json.parsed.date || '',
+            total: json.parsed.total || 0,
+            items: (json.parsed.items||[]).map(i=>({name:i.name||'',price:i.price||0})),
+            category: json.parsed.category || ''
+          };
+        } else if(json.text){
+          // fallback: テキストをパース
+          data=parseReceiptText(json.text);
+        }
       }
       if(!data)throw new Error('parse failed');
       if(data.date)document.getElementById('fDate').value=data.date;
