@@ -89,11 +89,21 @@
   }
   .upload-area:hover { border-color: #667eea; background: #f0f0ff; }
   .upload-area .receipt-illust {
-    flex-shrink: 0; width: 64px; height: 64px;
-    background: #eeeeff; border: 2px solid #c8ccf0;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; width: 52px; height: 78px;
+    background: #f0f0ff; border: 2px solid #c5cae9;
+    border-radius: 5px; position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start; padding-top: 10px; gap: 5px;
   }
+  .upload-area .receipt-illust::after {
+    content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 26px solid transparent; border-right: 26px solid transparent;
+    border-top: 10px solid #c5cae9;
+  }
+  .receipt-line { width: 34px; height: 3px; border-radius: 2px; background: #c5cae9; }
+  .receipt-line.short { width: 22px; }
+  .receipt-line.price { width: 30px; background: #667eea; opacity: 0.5; }
   .upload-text { text-align: left; }
   .upload-area .label { font-size: 1.1rem; font-weight: 700; color: #444; }
   .upload-area .sublabel { font-size: 0.9rem; color: #999; margin-top: 6px; line-height: 1.5; }
@@ -135,16 +145,14 @@
     padding-left: 10px; border-left: 3px solid #667eea;
   }
   .form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 14px 16px; border: 2px solid #c8ccf0;
+    width: 100%; padding: 14px 16px; border: 2px solid #dde1f0;
     border-radius: 12px; font-size: 1.1rem; font-family: var(--font);
-    color: #1a1a2e; background: #eeeeff; transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    color: #1a1a2e; background: #f5f6fc; transition: border-color 0.2s; outline: none;
   }
   .form-group input[type="date"] {
-    font-size: 1.5rem; font-weight: 700; padding: 14px 16px; min-height: 60px; text-align: center;
-    -webkit-appearance: none; appearance: none; width: 100%; box-sizing: border-box;
+    font-size: 1.1rem; padding: 14px 16px; min-height: 54px;
   }
-  .picker-btn { -webkit-appearance: none; appearance: none; box-sizing: border-box; }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: #eeeeff; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: white; }
   .form-group textarea { resize: none; height: 80px; }
   .category-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .category-chips::-webkit-scrollbar { display: none; }
@@ -209,9 +217,9 @@
 
   /* 予算設定 */
   .budget-input-wrap { display: flex; gap: 8px; align-items: center; padding: 14px 16px; }
-  .budget-input { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1.1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; -moz-appearance: textfield; transition: border-color 0.2s, box-shadow 0.2s; }
+  .budget-input { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1.1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; -moz-appearance: textfield; }
   .budget-input::-webkit-inner-spin-button, .budget-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-  .budget-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .budget-input:focus { border-color: #667eea; }
   .budget-save-btn { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); white-space: nowrap; }
   .summary-cats { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
   .summary-cat-item { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid #f0f0f5; gap: 14px; }
@@ -274,11 +282,7 @@
   .modal-shop-name { font-size: 1.3rem; font-weight: 700; }
   .modal-shop-date { font-size: 0.95rem; color: #999; margin-top: 2px; }
   .modal-section-title { font-size: 0.9rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
-  .modal-items { background: #f8f9fa; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 1rem; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
-  .modal-item-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #eee; }
-  .modal-item-row:last-child { border-bottom: none; }
-  .modal-item-name { color: #333; font-size: 1rem; flex: 1; padding-right: 12px; }
-  .modal-item-price { color: #667eea; font-weight: 700; font-size: 1rem; white-space: nowrap; }
+  .modal-items { background: #f8f9fa; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 1rem; line-height: 1.7; }
   .modal-total-row { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 1.2rem; font-weight: 700; }
   .btn-edit { background: #eff6ff; color: #2563eb; font-weight: 700; margin-bottom: 10px; }
   .btn-danger { background: #fee2e2; color: #dc2626; font-weight: 700; }
@@ -351,19 +355,19 @@
   }
   .amount-hero-display { display: none; }
   .amount-hero-input {
-    flex: 1; padding: 10px 12px; border: 2px solid #c8ccf0;
+    flex: 1; padding: 10px 12px; border: 2.5px solid #667eea;
     border-radius: 12px; font-size: 1.7rem; font-weight: 700;
-    font-family: var(--font); color: #1a1a2e; background: #eeeeff;
+    font-family: var(--font); color: #1a1a2e; background: white;
     text-align: right; outline: none; min-width: 0;
-    transition: border-color 0.2s, box-shadow 0.2s; -moz-appearance: textfield;
+    transition: border-color 0.2s; -moz-appearance: textfield;
   }
-  .amount-hero-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .amount-hero-input:focus { border-color: #764ba2; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
   .amount-hero-input::-webkit-inner-spin-button,
   .amount-hero-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
   /* ピッカーボタン */
-  .picker-btn { width: 100%; padding: 14px 16px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1.05rem; font-weight: 700; background: #eeeeff; color: #667eea; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; transition: all 0.2s; font-family: var(--font); }
-  .picker-btn.has-val { border-color: #c8ccf0; color: #1a1a2e; }
+  .picker-btn { width: 100%; padding: 14px 16px; border: 2px solid #b0b8f0; border-radius: 12px; font-size: 1.05rem; font-weight: 700; background: #f5f6ff; color: #667eea; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; transition: all 0.2s; font-family: var(--font); }
+  .picker-btn.has-val { border-color: #667eea; background: #eeeeff; color: #1a1a2e; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
   .picker-btn .picker-arrow { color: #a0a8e8; font-size: 1.3rem; margin-left: 8px; flex-shrink: 0; }
   .picker-btn.has-val .picker-arrow { color: #667eea; }
 
@@ -406,18 +410,18 @@
   .setting-action-btn.red    { color: #ef4444; border-color: #fca5a5; background: #fff1f1; }
   .add-shop-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
   .add-shop-row { display: flex; gap: 10px; margin-bottom: 10px; }
-  .add-shop-input { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-  .add-shop-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-  .add-shop-select { padding: 12px 10px; border: 2px solid #c8ccf0; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+  .add-shop-input { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; }
+  .add-shop-input:focus { border-color: #667eea; }
+  .add-shop-select { padding: 12px 10px; border: 2px solid #eef0f5; border-radius: 12px; font-size: 1rem; font-family: var(--font); color: #555; background: white; outline: none; cursor: pointer; }
   .btn-add { padding: 12px 18px; border: none; border-radius: 12px; background: #667eea; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: var(--font); }
 
   /* カテゴリ管理 */
   .add-cat-form { padding: 16px; background: #fafafa; border-top: 1px solid #f0f0f5; }
   .add-cat-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-  .add-cat-emoji { width: 54px; padding: 11px 6px; border: 2px solid #c8ccf0; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: var(--font); outline: none; background: #eeeeff; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
-  .add-cat-emoji:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-  .add-cat-name { flex: 1; padding: 12px 14px; border: 2px solid #c8ccf0; border-radius: 10px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: #eeeeff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-  .add-cat-name:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .add-cat-emoji { width: 54px; padding: 11px 6px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1.4rem; text-align: center; font-family: var(--font); outline: none; background: white; cursor: pointer; }
+  .add-cat-emoji:focus { border-color: #667eea; }
+  .add-cat-name { flex: 1; padding: 12px 14px; border: 2px solid #eef0f5; border-radius: 10px; font-size: 1rem; font-family: var(--font); color: #1a1a2e; background: white; outline: none; }
+  .add-cat-name:focus { border-color: #667eea; }
   .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; flex-shrink: 0; }
   .color-swatch.selected { border-color: #1a1a2e; transform: scale(1.18); box-shadow: 0 0 0 2px white inset; }
@@ -517,10 +521,9 @@
     <div class="upload-area" id="uploadArea">
       <input type="file" id="fileInput" accept="image/*" capture="environment">
       <div class="receipt-illust">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
+        <div class="receipt-line"></div><div class="receipt-line short"></div>
+        <div class="receipt-line"></div><div class="receipt-line short"></div>
+        <div class="receipt-line price"></div>
       </div>
       <div class="upload-text">
         <div class="label">📷 レシートを撮影</div>
@@ -556,12 +559,13 @@
     </div>
     <!-- 金額入力 -->
     <div class="amount-hero-card" id="amountHeroCard">
-      <div class="amount-hero-label" id="amountHeroLabel">💸 支出金額</div>
+      <div class="amount-hero-label" id="amountHeroLabel">💸 支出金額（円）</div>
       <div class="amount-hero-display" id="amountDisplay">¥0</div>
       <input type="number" id="fAmount" class="amount-hero-input" placeholder="0" min="0" inputmode="numeric">
     </div>
 
     <div class="form-card">
+      <h3>✏️ 内容を確認・修正して保存</h3>
       <div class="form-group">
         <label>日付</label>
         <input type="date" id="fDate">
@@ -574,6 +578,10 @@
         </button>
         <input type="text" id="fShop" placeholder="直接入力…" style="margin-top:8px">
       </div>
+      <div class="form-group">
+        <label>品目・メモ（自由記入）</label>
+        <textarea id="fItems" placeholder="何でも自由に書いてOK"></textarea>
+      </div>
       <div class="form-group" id="categoryGroup">
         <label>カテゴリ</label>
         <button type="button" class="picker-btn" id="catPickerBtn">
@@ -584,17 +592,9 @@
       <div class="form-group" id="payGroup">
         <label>支払い方法</label>
         <button type="button" class="picker-btn has-val" id="payPickerBtn">
-          <span id="payPickerVal">💳 クレジット</span>
+          <span id="payPickerVal">💵 現金</span>
           <span class="picker-arrow">›</span>
         </button>
-      </div>
-      <div class="form-group">
-        <label>購入品目</label>
-        <textarea id="fItems" placeholder="例：ファミマ・ザ・カレー ¥170&#10;値下 ¥-20" rows="4" style="font-size:0.95rem;line-height:1.7;"></textarea>
-      </div>
-      <div class="form-group">
-        <label>メモ</label>
-        <textarea id="fMemo" placeholder="自由にメモ…"></textarea>
       </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
     </div>
@@ -767,59 +767,37 @@
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
 (function(){
   var LS_KEY = 'nyanlog_userkey';
-  var CK_KEY = 'nyanlog_key'; // Cookie名（localStorageより消えにくい）
-
-  // キーをlocalStorage+Cookieの両方に保存（二重保存で耐久性UP）
-  function saveKey(k){
-    try{ localStorage.setItem(LS_KEY, k); }catch(e){}
-    try{ document.cookie = CK_KEY+'='+k+'; max-age=31536000; path=/; SameSite=Strict'; }catch(e){}
-  }
-
-  // localStorage → Cookie の順で復元
-  function loadKey(){
-    var k='';
-    try{ k=localStorage.getItem(LS_KEY)||''; }catch(e){}
-    if(!k||k.length<16){
-      try{
-        var m=document.cookie.match(new RegExp('(?:^|; )'+CK_KEY+'=([0-9a-f]{16,})'));
-        if(m) k=m[1];
-      }catch(e){}
-    }
-    return k;
-  }
-
   var key = location.hash.replace('#','');
   // iOSのスタンドアロン(PWA)モード判定
   var isStandalone = (window.navigator.standalone === true) ||
                      window.matchMedia('(display-mode: standalone)').matches;
 
   if(key && key.length >= 16){
-    // ハッシュあり → localStorage+Cookieに保存してそのまま使う
-    saveKey(key);
+    // ハッシュあり → localStorageに保存してそのまま使う
+    localStorage.setItem(LS_KEY, key);
     window._userKey = key;
   } else {
-    // ハッシュなし → localStorage/Cookieから復元を試みる
-    key = loadKey();
+    // ハッシュなし → localStorageから復元を試みる
+    key = localStorage.getItem(LS_KEY) || '';
     if(key && key.length >= 16){
-      // 復元成功 → URLを復元
+      // localStorageにあった → URLを復元
       history.replaceState(null,'',location.pathname+'#'+key);
       window._userKey = key;
     } else if(isStandalone){
-      // PWAモードかつどこにもない → 再接続モーダルを表示（データ消失防止）
+      // PWAモードかつlocalStorageにもない → 再接続モーダルを表示（データ消失防止）
       window._userKey = null; // 後でモーダルで設定
     } else {
       // 通常ブラウザで初回 → 新規キー生成
       var arr = new Uint8Array(16);
       crypto.getRandomValues(arr);
       key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-      saveKey(key);
+      localStorage.setItem(LS_KEY, key);
       history.replaceState(null,'',location.pathname+'#'+key);
       window._userKey = key;
     }
   }
   window._needReconnect = (window._userKey === null);
   window._LS_KEY = LS_KEY;
-  window._saveKey = saveKey; // 再接続モーダルから使えるように公開
 })();
 
 function initUserKey(){ return window._userKey; }
@@ -846,7 +824,7 @@ function initUserKey(){ return window._userKey; }
       return;
     }
     errEl.style.display = 'none';
-    window._saveKey(key);
+    localStorage.setItem(window._LS_KEY, key);
     location.href = location.pathname + '#' + key;
   });
 
@@ -856,7 +834,7 @@ function initUserKey(){ return window._userKey; }
     var arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
     var key = Array.from(arr).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
-    window._saveKey(key);
+    localStorage.setItem(window._LS_KEY, key);
     location.href = location.pathname + '#' + key;
   });
 })();
@@ -908,8 +886,8 @@ function rebuildCatMaps(){
 }
 rebuildCatMaps();
 
-const PAY_ICONS  = {'クレジット':'💳','現金':'💵','その他':'🏷'};
-const PAY_LIST = [{key:'クレジット',icon:'💳'},{key:'現金',icon:'💵'},{key:'その他',icon:'🏷'}];
+const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
+const PAY_LIST = [{key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}];
 
 // ─── 状態変数 ─────────────────────────────────────────
 let entries=[], shops=[], currentUser=null;
@@ -1069,7 +1047,7 @@ document.querySelectorAll('.type-btn').forEach(btn=>{
       shopLabel.textContent='入金元（振込元・支払い元）';
     } else {
       card.classList.remove('income');
-      label.textContent='💸 支出金額';
+      label.textContent='💸 支出金額（円）';
       catGroup.style.display='';
       payGroup.style.display='';
       shopLabel.textContent='購入先（店名）';
@@ -1092,88 +1070,64 @@ document.querySelectorAll('.tab').forEach(tab=>{
 });
 const uploadArea=document.getElementById('uploadArea');
 const fileInput=document.getElementById('fileInput');
-fileInput.addEventListener('click',e=>e.stopPropagation());
 uploadArea.addEventListener('click',()=>fileInput.click());
 uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.style.borderColor='#667eea';});
 uploadArea.addEventListener('dragleave',()=>{uploadArea.style.borderColor='';});
 uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.style.borderColor='';if(e.dataTransfer.files[0])processImage(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',()=>{if(fileInput.files[0])processImage(fileInput.files[0]);});
 async function processImage(file){
-  // ① BlobURL でプレビューを即座に表示（FileReader不要・遅延ゼロ）
-  const blobUrl=URL.createObjectURL(file);
-  document.getElementById('receiptImg').src=blobUrl;
-  document.getElementById('receiptPreview').classList.add('visible');
-  document.getElementById('ocrResult').classList.remove('visible');
-  const statusEl=document.getElementById('aiStatus');
-  const statusTextEl=document.getElementById('aiStatusText');
-  statusEl.className='ai-status analyzing';
-  statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
-  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  try{
-    let data=null;
-    // Cowork AI が使える場合は優先（DataURLが必要な場合のみ生成）
-    if(window.cowork&&window.cowork.askClaude){
-      try{
-        const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});
-        const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:\n{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
-        const result=await window.cowork.askClaude(prompt,[dataUrl]);
-        const jsonMatch=result.match(/\{[\s\S]*\}/);
-        if(jsonMatch)data=JSON.parse(jsonMatch[0]);
-      }catch(e2){}
-    }
-    // フォールバック: Cloudflare Worker経由でGoogle Vision API
-    if(!data){
-      statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
-      // ② createImageBitmap で直接1000px幅にリサイズ（GPUデコード・フル解像度展開なし）
-      let base64;
-      try{
-        const bmp=await createImageBitmap(file,{resizeWidth:1000,resizeQuality:'medium'});
-        const c=document.createElement('canvas');
-        c.width=bmp.width;c.height=bmp.height;
-        const ctx=c.getContext('2d');
-        ctx.drawImage(bmp,0,0);
-        bmp.close();
-        const d=ctx.getImageData(0,0,c.width,c.height);
-        for(let i=0;i<d.data.length;i+=4){const g=d.data[i]*0.299+d.data[i+1]*0.587+d.data[i+2]*0.114;d.data[i]=d.data[i+1]=d.data[i+2]=g;}
-        ctx.putImageData(d,0,0);
-        base64=c.toDataURL('image/jpeg',0.7).split(',')[1];
-      }catch(e3){
-        // フォールバック（createImageBitmapオプション非対応環境）
-        const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});
-        base64=dataUrl.split(',')[1];
+  const reader=new FileReader();
+  reader.onload=async(ev)=>{
+    const dataUrl=ev.target.result;
+    document.getElementById('receiptImg').src=dataUrl;
+    document.getElementById('receiptPreview').classList.add('visible');
+    document.getElementById('ocrResult').classList.remove('visible');
+    const statusEl=document.getElementById('aiStatus');
+    const statusTextEl=document.getElementById('aiStatusText');
+    statusEl.className='ai-status analyzing';
+    statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
+    document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+    try{
+      let data=null;
+      // Cowork AI が使える場合は優先（精度高）
+      if(window.cowork&&window.cowork.askClaude){
+        try{
+          const prompt=`このレシート画像を解析して、以下のJSON形式だけで返答してください（説明不要）:\n{"date":"YYYY-MM-DD","shop":"店名","items":[{"name":"商品名","price":数値}],"total":合計金額の数値,"category":"食費か日用品か交通費か医療か娯楽かその他"}`;
+          const result=await window.cowork.askClaude(prompt,[dataUrl]);
+          const jsonMatch=result.match(/\{[\s\S]*\}/);
+          if(jsonMatch)data=JSON.parse(jsonMatch[0]);
+        }catch(e2){}
       }
-      const res=await fetch('https://nyanlog.mahito-ai.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
-      const json=await res.json();
-      if(json.error&&!json.parsed&&!json.text)throw new Error('OCR error');
-      if(json.parsed){data=json.parsed;if(!data.rawMemo&&json.text)data.rawMemo=json.text;}
-      else if(json.text)data=parseReceiptText(json.text);
+      // フォールバック: Cloudflare Worker経由でGoogle Vision API
+      if(!data){
+        statusTextEl.innerHTML='<span class="spinner"></span> OCR解析中...';
+        const base64=dataUrl.split(',')[1];
+        const res=await fetch('https://nyanlog.mahito-ai.workers.dev',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({image:base64})
+        });
+        const json=await res.json();
+        if(json.error)throw new Error('Vision API error');
+        if(json.text)data=parseReceiptText(json.text);
+      }
+      if(!data)throw new Error('parse failed');
+      if(data.date)document.getElementById('fDate').value=data.date;
+      if(data.shop)document.getElementById('fShop').value=data.shop;
+      if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
+      if(data.category)selectCategory(data.category);
+      if(data.payMethod)selectPayment(data.payMethod);
+      if(data.rawMemo){document.getElementById('fItems').value=data.rawMemo;}
+      else if(data.items&&data.items.length>0){document.getElementById('fItems').value=data.items.map(i=>`${i.name} ¥${i.price}`).join('\n');}
+      showOcrResult(data);
+      statusEl.className='ai-status done';
+      statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
+    }catch(e){
+      statusEl.className='ai-status error';
+      statusTextEl.textContent='⚠️ 手動で入力してください。';
     }
-    if(!data)throw new Error('parse failed');
-    // shop フィールド正規化：AI が store/storeName/shopName で返す場合にも対応
-    if(!data.shop)data.shop=data.store||data.storeName||data.shopName||'';
-    // rawMemo（生OCRテキスト）から店名を再抽出（最終手段）
-    if(!data.shop&&data.rawMemo){const fb=parseReceiptText(data.rawMemo);if(fb.shop)data.shop=fb.shop;}
-    if(data.date)document.getElementById('fDate').value=data.date;
-    if(data.shop)document.getElementById('fShop').value=data.shop;
-    if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
-    if(data.category)selectCategory(data.category);
-    if(data.payMethod)selectPayment(data.payMethod);
-    showOcrResult(data);
-    // OCR品目をfItemsテキストエリアにも反映
-    if(data.items && data.items.length > 0){
-      const itemsText = data.items.map(i => {
-        if(typeof i === 'string') return i;
-        return i.name + (i.price ? ' ¥' + i.price : '');
-      }).filter(l => l && l.trim()).join('\n');
-      document.getElementById('fItems').value = itemsText;
-    }
-    statusEl.className='ai-status done';
-    statusTextEl.textContent='✅ 読み取り完了！内容を確認して保存してください。';
-  }catch(e){
-    statusEl.className='ai-status error';
-    statusTextEl.textContent='⚠️ 手動で入力してください。';
-  }
-  URL.revokeObjectURL(blobUrl);
+  };
+  reader.readAsDataURL(file);
 }
 // レシート画像前処理：グレースケール＋コントラスト強化
 function preprocessImage(file){
@@ -1214,28 +1168,21 @@ function parseReceiptText(text){
     // 支払金額（完全一致優先）
     const m1=line.match(/支払金額\s*[¥￥\\]?\s*([\d,，]+)/);
     if(m1){total=parseInt(m1[1].replace(/[,，]/g,''));break;}
-    // 合計・お会計（商品合計・小計は低優先度）
+    // 合計・お会計
     const m2=line.match(/(?:合計|会計)\s*[¥￥\\]?\s*([\d,，]+)/);
-    if(m2){
-      const isSubtotal=/商品合計|小計/.test(line);
-      amountCandidates.push({v:parseInt(m2[1].replace(/[,，]/g,'')),priority:isSubtotal?1:2});
-    }
+    if(m2)amountCandidates.push({v:parseInt(m2[1].replace(/[,，]/g,'')),priority:2});
     // ¥マーク付きの数字
     const m3=line.match(/[¥￥]([\d,，]+)/g);
     if(m3)m3.forEach(s=>{
       const n=parseInt(s.replace(/[¥￥,，]/g,''));
-      if(n>=100)amountCandidates.push({v:n,priority:0});
+      if(n>=100)amountCandidates.push({v:n,priority:1});
     });
   }
-  // 支払金額が見つからなかった場合は優先度順・最後に出現したものを採用（割引後の合計を優先）
+  // 支払金額が見つからなかった場合は優先度順・金額最大で決定
   if(!total&&amountCandidates.length>0){
     const p2=amountCandidates.filter(x=>x.priority===2);
-    if(p2.length>0)total=p2[p2.length-1].v; // 最後の合計行（割引後）
-    else{
-      const p1=amountCandidates.filter(x=>x.priority===1);
-      if(p1.length>0)total=p1[p1.length-1].v;
-      else total=Math.max(...amountCandidates.map(x=>x.v));
-    }
+    if(p2.length>0)total=Math.max(...p2.map(x=>x.v));
+    else total=Math.max(...amountCandidates.map(x=>x.v));
   }
   // 店名（数字・記号で始まらない・2文字以上の最初の行）
   const rawShop=lines.find(l=>l.length>1&&!/^[\d¥￥\\＼\-－—―\s]/.test(l))||lines[0]||'';
@@ -1253,38 +1200,34 @@ function parseReceiptText(text){
   // 支払い方法を検出
   const payMethod=text.match(/クレジット|カード|VISA|Master|電子マネー|Suica|PayPay|交通系/i)?'クレジット':'現金';
   // 商品行を抽出（価格で終わる行・合計系除外）
-  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員|クレジット|VISA|Master|カード|AID|取引|区分|一括|丁目|番地|都|道|府|県|市|区|町|村|ありがとう|またのご|領収|お客様|控え|店長|営業時間|対象|消費税|商品数|買上|お釣|おつり|レシート|小売/;
-  const isCreditLine=(s)=>/\*{3,}|\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}/.test(s);
+  const skipWords=/合計|小計|支払|税|釣|預|割引|ポイント|値引|登録番号|電話|住所|〒|TEL|FAX|番号|伝票|承認|会員|クレジット|VISA|Master|カード|AID|取引|区分|一括|丁目|番地|都|道|府|県|市|区|町|村|ありがとう|またのご|領収|お客様|控え|店長|営業時間|対象|消費税/;
   const items=[];
   let prevLine='';
-  let prevPrevLine='';
   for(const line of lines){
-    // クレジットカード番号行（**** など）は完全スキップ
-    if(isCreditLine(line)){prevPrevLine=prevLine;prevLine=line;continue;}
-    // 価格のみの行（¥NNN軽 ・ NNN※ など）→ 品名を探す
-    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*(?:[軽減※]\s*[A-Za-z]?)?\s*$/);
-    if(priceOnly){
-      const price=parseInt(priceOnly[1].replace(/[,，]/g,''));
-      // prevLineが@数量行（@145 × 2点 など）なら2行前が品名
-      const candidate=/^[@＠]/.test(prevLine)?prevPrevLine:prevLine;
-      const cleanPrev=candidate.replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
-      if(cleanPrev.length>=2&&!skipWords.test(cleanPrev)&&!isCreditLine(cleanPrev)&&!/^[@＠×\d¥￥]/.test(cleanPrev)&&price>=10&&price<50000){
+    // 価格のみの行（¥NNN軽 など）→ 前の行が品名
+    const priceOnly=line.match(/^[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+    // @単価×N点 ¥合計軽 パターン（FamilyMart）→ 前の行が品名
+    const atQtyPrice=line.match(/^[@＠][\d,，.]+.{0,6}\d+[点個本]\s*[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
+    if(priceOnly||atQtyPrice){
+      const m2=priceOnly||atQtyPrice;
+      const price=parseInt(m2[1].replace(/[,，]/g,''));
+      const cleanPrev=prevLine.replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
+      if(cleanPrev.length>=2&&!skipWords.test(cleanPrev)&&!/^[@＠×\d¥￥]/.test(cleanPrev)&&price>=10&&price<50000){
         items.push({name:cleanPrev,price});
       }
     } else {
-      // 同一行に品名＋価格のパターン（末尾に※軽減なども対応）
-      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*(?:[軽減※]\s*[A-Za-z]?)?\s*$/);
+      // 同一行に品名＋価格のパターン
+      const m=line.match(/^(.+?)\s{2,}[¥￥\\]?\s*([\d,，]+)\s*[軽減]?\s*$/);
       if(m){
         const name=m[1].replace(/^[◎◉@★☆▲●◆\-－—―\s]+/,'').trim();
         const price=parseInt(m[2].replace(/[,，]/g,''));
-        if(name.length>=2&&!skipWords.test(name)&&!isCreditLine(name)&&price>=10&&price<50000)items.push({name,price});
+        if(name.length>=2&&!skipWords.test(name)&&price>=10&&price<50000)items.push({name,price});
       }
     }
-    prevPrevLine=prevLine;
     prevLine=line;
   }
-  // rawMemo = 生OCRテキスト全体（何も取りこぼさない）
-  return {date,shop,total,items,rawMemo:text,payMethod};
+  const memo=items.length>0?items.map(i=>`${i.name} ¥${i.price}`).join('\n'):'';
+  return {date,shop,total,items,rawMemo:memo,payMethod};
 }
 function showOcrResult(data){
   document.getElementById('ocrResult').classList.add('visible');
@@ -1309,7 +1252,7 @@ function selectPayment(pay){
   document.getElementById('payPickerVal').textContent=(p?p.icon+' ':'')+pay;
   document.getElementById('payPickerBtn').classList.add('has-val');
 }
-selectPayment('クレジット');
+selectPayment('現金');
 
 // ボトムシートを開く
 function openPicker(mode){
@@ -1376,8 +1319,7 @@ document.getElementById('saveBtn').addEventListener('click',async()=>{
   if(!shop){alert(selectedType==='収入'?'入金元を入力してください':'購入先を入力してください');return;}
   if(selectedType!=='収入'&&!selectedCategory){alert('カテゴリを選択してください');return;}
   if(!amount){alert('金額を入力してください');return;}
-  const memo=document.getElementById('fMemo').value.trim();
-  const data={date,shop,items,memo,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
+  const data={date,shop,items,category:selectedCategory,amount,payment:selectedPayment||'現金',type:selectedType||'支出'};
   await saveEntry(data, editingEntryId||null);
   // 未登録の店名なら自動追加
   if(shop&&!shops.find(s=>s.name===shop)){
@@ -1394,19 +1336,19 @@ function resetForm(){
   editingEntryId=null; selectedType='支出';
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type==='支出'));
   document.getElementById('amountHeroCard').classList.remove('income');
-  document.getElementById('amountHeroLabel').textContent='💸 支出金額';
+  document.getElementById('amountHeroLabel').textContent='💸 支出金額（円）';
   document.getElementById('categoryGroup').style.display='';
   document.getElementById('payGroup').style.display='';
   document.getElementById('shopLabel').textContent='購入先（店名）';
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
-  ['fShop','fAmount','fMemo','fItems'].forEach(id=>document.getElementById(id).value='');
+  ['fShop','fItems','fAmount'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
   document.getElementById('catPickerVal').textContent='📂 タップして選択';
   document.getElementById('catPickerBtn').classList.remove('has-val');
-  selectPayment('クレジット');
+  selectPayment('現金');
   document.getElementById('receiptPreview').classList.remove('visible');
   document.getElementById('ocrResult').classList.remove('visible');
   document.getElementById('receiptImg').src='';fileInput.value='';
@@ -1449,14 +1391,7 @@ function openModal(id){
       <div class="modal-shop-icon">${CAT_ICONS[e.category]||'📦'}</div>
       <div><div class="modal-shop-name">${e.shop}</div><div class="modal-shop-date">${e.date} · ${e.category} · ${PAY_ICONS[e.payment]||'💵'}${e.payment||'現金'}</div></div>
     </div>
-    ${e.items?`<div class="modal-section-title">品目・メモ</div><div class="modal-items">${(()=>{
-      const lines=e.items.split('\n').map(l=>l.trim()).filter(l=>l);
-      const parsed=lines.map(l=>{const m=l.match(/^(.+?)\s+[¥￥]([\d,]+)$/);return m?{name:m[1],price:parseInt(m[2].replace(/,/g,''))}:null;});
-      if(parsed.length>0&&parsed.every(p=>p)){
-        return parsed.map(p=>`<div class="modal-item-row"><span class="modal-item-name">${p.name}</span><span class="modal-item-price">${fmt(p.price)}</span></div>`).join('');
-      }
-      return e.items.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    })()}</div>`:''}
+    ${e.items?`<div class="modal-section-title">品目・メモ</div><div class="modal-items">${e.items}</div>`:''}
     <div class="modal-total-row"><span>合計</span><span>${fmt(e.amount)}</span></div>`;
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -1477,16 +1412,32 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   // フォームに値をセット
   document.getElementById('fDate').value = e.date;
   document.getElementById('fShop').value = e.shop;
+  document.getElementById('fItems').value = e.items||'';
   document.getElementById('fAmount').value = e.amount;
   document.getElementById('amountDisplay').textContent = '¥'+Number(e.amount).toLocaleString('ja-JP');
   selectCategory(e.category);
   selectPayment(e.payment||'現金');
-  document.getElementById('fMemo').value = e.memo||'';
-  // itemsが配列の場合も文字列に変換
-  const itemsVal = Array.isArray(e.items)
-    ? e.items.map(i => typeof i === 'string' ? i : (i.name||'') + (i.price ? ' ¥'+i.price : '')).filter(l=>l.trim()).join('\n')
-    : (e.items||'');
-  document.getElementById('fItems').value = itemsVal;
+  // 支出/入金トグルを復元
+  selectedType = e.type || '支出';
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active', b.dataset.type===selectedType));
+  const card=document.getElementById('amountHeroCard');
+  const label=document.getElementById('amountHeroLabel');
+  const catGroup=document.getElementById('categoryGroup');
+  const payGroup=document.getElementById('payGroup');
+  const shopLabel=document.getElementById('shopLabel');
+  if(selectedType==='収入'){
+    card.classList.add('income');
+    label.textContent='💰 入金金額（円）';
+    catGroup.style.display='none';
+    payGroup.style.display='none';
+    shopLabel.textContent='入金元（振込元・支払い元）';
+  } else {
+    card.classList.remove('income');
+    label.textContent='💸 支出金額（円）';
+    catGroup.style.display='';
+    payGroup.style.display='';
+    shopLabel.textContent='購入先（店名）';
+  }
   // 編集モードON
   editingEntryId = e.id;
   const saveBtn = document.getElementById('saveBtn');
@@ -1582,19 +1533,12 @@ function openCatDetail(cat, catEntries){
       const isIncome=e.type==='収入';
       const d=new Date(e.date+'T00:00:00');
       const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
-      return `<div class="cat-detail-row" data-id="${e.id}" style="cursor:pointer">
+      return `<div class="cat-detail-row">
         <div class="cat-detail-date">${dateStr}</div>
         <div class="cat-detail-shop">${e.shop||e.items||'—'}</div>
         <div class="cat-detail-amount ${isIncome?'income':'expense'}">${isIncome?'+':'−'}${fmt(e.amount)}</div>
-        <div style="color:#aaa;font-size:1rem;padding-left:4px">›</div>
       </div>`;
     }).join('');
-    list.querySelectorAll('.cat-detail-row[data-id]').forEach(row=>{
-      row.addEventListener('click',()=>{
-        overlay.classList.remove('open');
-        setTimeout(()=>openModal(row.dataset.id),150);
-      });
-    });
   }
   overlay.classList.add('open');
 }
@@ -1623,32 +1567,10 @@ function renderSettings(){
       <div class="settings-row">
         <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
         <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
-        <button class="btn-edit-shop" data-id="${s.id}" data-name="${s.name.replace(/"/g,'&quot;')}" data-cat="${s.cat}" style="background:none;border:none;font-size:1.2rem;padding:6px;cursor:pointer;color:#667eea">✏️</button>
         <button class="btn-del" data-id="${s.id}">🗑</button>
       </div>`).join('');
     list.querySelectorAll('.btn-del').forEach(btn=>{
-      btn.addEventListener('click',async()=>{
-        await deleteShop(btn.dataset.id);
-        // 編集モード中だったらリセット
-        window._editingShopId=null;
-        document.getElementById('newShopName').value='';
-        const addBtn=document.getElementById('addShopBtn');
-        addBtn.textContent='＋ 登録する';addBtn.style.background='';
-        renderSettings();
-      });
-    });
-    list.querySelectorAll('.btn-edit-shop').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        document.getElementById('newShopName').value=btn.dataset.name;
-        const catSel=document.getElementById('newShopCat');
-        if(catSel) catSel.value=btn.dataset.cat;
-        window._editingShopId=btn.dataset.id;
-        const addBtn=document.getElementById('addShopBtn');
-        addBtn.textContent='✅ 更新する';
-        addBtn.style.background='#667eea';
-        document.getElementById('newShopName').focus();
-        document.getElementById('newShopName').scrollIntoView({behavior:'smooth',block:'center'});
-      });
+      btn.addEventListener('click',async()=>{await deleteShop(btn.dataset.id);renderSettings();});
     });
   }
 
@@ -1694,7 +1616,6 @@ function renderCategorySettings(){
         <div class="cat-row-color" style="background:${c.color}"></div>
         <div class="settings-row-name">${c.key}</div>
       </div>
-      <button class="btn-edit-cat" data-idx="${i}" style="background:none;border:none;font-size:1.2rem;padding:6px;cursor:pointer;color:#667eea">✏️</button>
       <button class="btn-del" data-idx="${i}">🗑</button>
     </div>`).join('');
   list.querySelectorAll('.btn-del').forEach(btn=>{
@@ -1703,29 +1624,7 @@ function renderCategorySettings(){
       if(!confirm(`「${CAT_LIST[idx].key}」を削除しますか？`))return;
       CAT_LIST.splice(idx,1);
       await saveCategories();
-      // 編集中だったらリセット
-      window._editingCatIdx=null;
-      document.getElementById('newCatName').value='';
-      document.getElementById('newCatIcon').value='🏷';
-      const addBtn=document.getElementById('addCatBtn');
-      addBtn.textContent='＋ カテゴリを追加';addBtn.style.background='';
       renderSettings();
-    });
-  });
-  list.querySelectorAll('.btn-edit-cat').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const idx=parseInt(btn.dataset.idx);
-      const cat=CAT_LIST[idx];
-      document.getElementById('newCatIcon').value=cat.icon;
-      document.getElementById('newCatName').value=cat.key;
-      // カラーパレットも該当色を選択
-      selectedCatColor=cat.color;
-      renderColorPalette();
-      window._editingCatIdx=idx;
-      const addBtn=document.getElementById('addCatBtn');
-      addBtn.textContent='✅ 更新する';addBtn.style.background='#667eea';
-      document.getElementById('newCatName').focus();
-      document.getElementById('newCatName').scrollIntoView({behavior:'smooth',block:'center'});
     });
   });
 }
@@ -1741,56 +1640,31 @@ document.getElementById('budgetSaveBtn').addEventListener('click',()=>{
   renderSummary();
 });
 
-window._editingCatIdx = null;
 document.getElementById('addCatBtn').addEventListener('click',async()=>{
   const icon=document.getElementById('newCatIcon').value.trim()||'🏷';
   const name=document.getElementById('newCatName').value.trim();
   if(!name){alert('カテゴリ名を入力してください');return;}
+  if(CAT_LIST.find(c=>c.key===name)){alert('すでに登録されています');return;}
+  CAT_LIST.push({key:name,icon,color:selectedCatColor});
+  await saveCategories();
+  document.getElementById('newCatName').value='';
+  document.getElementById('newCatIcon').value='🏷';
   const btn=document.getElementById('addCatBtn');
-  if(window._editingCatIdx!==null){
-    // 更新モード
-    const idx=window._editingCatIdx;
-    CAT_LIST[idx]={key:name,icon,color:selectedCatColor};
-    window._editingCatIdx=null;
-    await saveCategories();
-    document.getElementById('newCatName').value='';
-    document.getElementById('newCatIcon').value='🏷';
-    btn.textContent='✅ 更新しました！';btn.style.background='#22c55e';
-    setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
-  } else {
-    // 新規追加モード
-    if(CAT_LIST.find(c=>c.key===name)){alert('すでに登録されています');return;}
-    CAT_LIST.push({key:name,icon,color:selectedCatColor});
-    await saveCategories();
-    document.getElementById('newCatName').value='';
-    document.getElementById('newCatIcon').value='🏷';
-    btn.textContent='✅ 追加しました！';btn.style.background='#22c55e';
-    setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
-  }
+  btn.textContent='✅ 追加しました！';btn.style.background='#22c55e';
+  setTimeout(()=>{btn.textContent='＋ カテゴリを追加';btn.style.background='';},1200);
   renderSettings();
 });
 
-window._editingShopId = null;
 document.getElementById('addShopBtn').addEventListener('click',async()=>{
   const name=document.getElementById('newShopName').value.trim();
   const cat=document.getElementById('newShopCat').value;
   if(!name){alert('店名を入力してください');return;}
+  if(shops.find(s=>s.name===name)){alert('すでに登録されています');return;}
+  await saveShop({name,cat},null);
+  document.getElementById('newShopName').value='';
   const btn=document.getElementById('addShopBtn');
-  if(window._editingShopId){
-    // 更新モード
-    await saveShop({name,cat},window._editingShopId);
-    window._editingShopId=null;
-    document.getElementById('newShopName').value='';
-    btn.textContent='✅ 更新しました！';btn.style.background='#22c55e';
-    setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
-  } else {
-    // 新規登録モード
-    if(shops.find(s=>s.name===name)){alert('すでに登録されています');return;}
-    await saveShop({name,cat},null);
-    document.getElementById('newShopName').value='';
-    btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
-    setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
-  }
+  btn.textContent='✅ 登録しました！';btn.style.background='#22c55e';
+  setTimeout(()=>{btn.textContent='＋ 登録する';btn.style.background='';},1200);
 });
 document.getElementById('resetFormBtn').addEventListener('click',()=>{
   if(!confirm('入力フォームの内容をリセットしますか？'))return;
@@ -1810,7 +1684,7 @@ document.getElementById('clearAllBtn').addEventListener('click',async()=>{
 });
 // 足跡アニメーション
 function spawnPaws(){
-  const count = 3;
+  const count = 6;
   for(let i=0;i<count;i++){
     setTimeout(()=>{
       const el = document.createElement('div');
