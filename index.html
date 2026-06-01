@@ -649,6 +649,15 @@
         <button class="btn-add" id="addShopBtn" style="width:100%">＋ 登録する</button>
       </div>
     </div>
+    <!-- 初期残高設定 -->
+    <div class="settings-section">
+      <div class="settings-section-title">🏦 累計残高の初期値を設定</div>
+      <div class="budget-input-wrap">
+        <input type="number" class="budget-input" id="initialBalanceInput" placeholder="例：25000" inputmode="numeric">
+        <button class="budget-save-btn" id="initialBalanceSaveBtn">保存</button>
+      </div>
+      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">銀行残高など、記録開始時点の実際の残高を入力してください。累計残高に加算されます。</div>
+    </div>
     <!-- 月の予算設定 -->
     <div class="settings-section">
       <div class="settings-section-title">💰 今月の予算を設定</div>
@@ -954,7 +963,7 @@ function updateHeader(){
   // 全期間の累計残高（入金合計 − 支払い合計）
   const totalIncome =entries.filter(e=>e.type==='収入').reduce((s,e)=>s+(e.amount||0),0);
   const totalExpense=entries.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
-  const balance=totalIncome-totalExpense;
+  const balance=loadInitialBalance()+totalIncome-totalExpense;
   document.getElementById('headerIncome').textContent=fmt(monthIncome);
   document.getElementById('headerExpense').textContent=fmt(monthExpense);
   const balEl=document.getElementById('headerBalance');
@@ -987,6 +996,9 @@ function copyShareUrl(){
 function getBudgetKey(){ return 'budget_' + userKey; }
 function loadBudget(){ return parseInt(localStorage.getItem(getBudgetKey())||'0')||0; }
 function saveBudget(v){ localStorage.setItem(getBudgetKey(), v); }
+function getInitialBalanceKey(){ return 'initialBalance_'+(userKey||''); }
+function loadInitialBalance(){ return parseInt(localStorage.getItem(getInitialBalanceKey())||'0')||0; }
+function saveInitialBalance(v){ localStorage.setItem(getInitialBalanceKey(), v); }
 
 function renderBudgetCard(expense){
   const budget=loadBudget();
@@ -1563,6 +1575,8 @@ function renderSettings(){
   // 予算入力欄に現在値を表示
   const budgetInput=document.getElementById('budgetInput');
   if(budgetInput){ const b=loadBudget(); if(b)budgetInput.value=b; }
+  const initBalInput=document.getElementById('initialBalanceInput');
+  if(initBalInput){ const v=loadInitialBalance(); if(v)initBalInput.value=v; }
 
   // お店リスト
   const list=document.getElementById('shopList');
@@ -1644,6 +1658,16 @@ document.getElementById('budgetSaveBtn').addEventListener('click',()=>{
   setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1200);
   // 集計タブが開いていれば即反映
   renderSummary();
+});
+
+// 初期残高保存
+document.getElementById('initialBalanceSaveBtn').addEventListener('click',()=>{
+  const val=parseInt(document.getElementById('initialBalanceInput').value)||0;
+  saveInitialBalance(val);
+  const btn=document.getElementById('initialBalanceSaveBtn');
+  btn.textContent='✅ 保存！'; btn.style.background='#22c55e';
+  setTimeout(()=>{btn.textContent='保存';btn.style.background='';},1200);
+  updateHeader();
 });
 
 document.getElementById('addCatBtn').addEventListener('click',async()=>{
