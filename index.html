@@ -619,6 +619,10 @@
       <div class="label">今月の合計支出</div>
       <div class="amount" id="sumTotal">¥0</div>
     </div>
+    <div class="summary-total-card" style="background:linear-gradient(135deg,#2d7dd2,#1a4a8a);margin-top:-8px;">
+      <div class="label" id="sumYearLabel">今年の合計支出</div>
+      <div class="amount" id="sumYearTotal">¥0</div>
+    </div>
     <div class="chart-card">
       <h3>📊 カテゴリ別内訳</h3>
       <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
@@ -694,6 +698,24 @@
         <div style="flex:1"><div class="settings-row-name">復元</div><div class="settings-row-cat">バックアップから読み込む</div></div>
         <button class="setting-action-btn blue" id="importBtn">読込</button>
         <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">📊</div>
+        <div style="flex:1"><div class="settings-row-name">CSVエクスポート</div><div class="settings-row-cat">Excelで開けるCSVファイル</div></div>
+        <button class="setting-action-btn blue" id="csvExportBtn">CSV</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">🖨️</div>
+        <div style="flex:1"><div class="settings-row-name">印刷・PDF保存</div><div class="settings-row-cat">ブラウザの印刷機能でPDF化</div></div>
+        <button class="setting-action-btn purple" id="printBtn">印刷</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">🗑️ データ整理</div>
+      <div class="settings-row">
+        <div class="settings-row-icon">💰</div>
+        <div style="flex:1"><div class="settings-row-name">収入エントリを全削除</div><div class="settings-row-cat">初期残高設定と二重計上になる場合に使用</div></div>
+        <button class="setting-action-btn red" id="deleteIncomeBtn">削除</button>
       </div>
     </div>
     <div class="settings-section">
@@ -1471,6 +1493,11 @@ function renderSummary(){
   const filtered=entries.filter(e=>e.date&&e.date.startsWith(mk));
   const total=filtered.filter(e=>e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
   document.getElementById('sumTotal').textContent=fmt(total);
+  // 今年の合計支出
+  const year=currentSumMonth.getFullYear();
+  const yearTotal=entries.filter(e=>e.date&&e.date.startsWith(String(year))&&e.type!=='収入').reduce((s,e)=>s+(e.amount||0),0);
+  document.getElementById('sumYearTotal').textContent=fmt(yearTotal);
+  document.getElementById('sumYearLabel').textContent=`${year}年の合計支出`;
   renderBudgetCard(total);
   // カテゴリ集計は支出のみ（収入は除く）
   const byCat={};Object.keys(CAT_ICONS).forEach(k=>byCat[k]=0);
@@ -1775,6 +1802,55 @@ document.getElementById('importFile').addEventListener('change',async e=>{
   };
   reader.readAsText(file);
 });
+
+// ─── CSVエクスポート ───────────────────────────────────
+document.getElementById('csvExportBtn').addEventListener('click',()=>{
+  const header=['日付','店名','品目・メモ','カテゴリ','支払方法','種別','金額'];
+  const rows=entries.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>[
+    e.date||'',
+    (e.shop||'').replace(/,/g,'、'),
+    (e.items||'').replace(/,/g,'、'),
+    (e.category||''),
+    (e.payment||''),
+    e.type==='収入'?'収入':'支出',
+    e.type==='収入'?e.amount:-(e.amount||0)
+  ]);
+  const csv='\uFEFF'+[header,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`nyanlog_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+});
+
+// ─── 印刷・PDF ───────────────────────────────────────
+document.getElementById('printBtn').addEventListener('click',()=>{
+  const year=new Date().getFullYear();
+  const yearEntries=entries.filter(e=>e.date&&e.date.startsWith(String(year))&&e.type!=='収入').sort((a,b)=>b.date.localeCompare(a.date));
+  const yearTotal=yearEntries.reduce((s,e)=>s+(e.amount||0),0);
+  const rows=yearEntries.map(e=>`<tr><td>${e.date}</td><td>${e.shop||''}</td><td>${e.items||''}</td><td>${e.category||''}</td><td>${e.payment||''}</td><td style="text-align:right">¥${(e.amount||0).toLocaleString()}</td></tr>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>にゃんログ ${year}年 支出一覧</title>
+  <style>body{font-family:sans-serif;padding:20px}h1{font-size:18px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #ccc;padding:6px 8px}th{background:#f0f0ff}tfoot td{font-weight:bold;background:#f8f8ff}</style></head>
+  <body><h1>🐱 にゃんログ家計簿 ${year}年 支出一覧</h1>
+  <table><thead><tr><th>日付</th><th>店名</th><th>品目・メモ</th><th>カテゴリ</th><th>支払方法</th><th>金額</th></tr></thead>
+  <tbody>${rows}</tbody>
+  <tfoot><tr><td colspan="5">合計</td><td style="text-align:right">¥${yearTotal.toLocaleString()}</td></tr></tfoot>
+  </table></body></html>`);
+  w.document.close(); w.print();
+});
+
+// ─── 収入エントリ一括削除 ────────────────────────────────
+document.getElementById('deleteIncomeBtn').addEventListener('click',async()=>{
+  const incomeEntries=entries.filter(e=>e.type==='収入');
+  if(incomeEntries.length===0){alert('収入エントリはありません。');return;}
+  if(!confirm(`収入エントリ ${incomeEntries.length}件を削除します。\n元に戻せません。よいですか？`))return;
+  const batch=db.batch();
+  incomeEntries.forEach(e=>batch.delete(userRef().collection('entries').doc(e.id)));
+  await batch.commit();
+  alert('✅ 収入エントリを全削除しました。');
+});
+
 
 // Firestoreはクラウド保存なのでバックアップリマインダー不要
 
