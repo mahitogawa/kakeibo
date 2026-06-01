@@ -486,15 +486,12 @@
       <div class="stat-val" id="headerIncome">¥0</div>
     </div>
     <div class="header-divider"></div>
-    <div class="header-stat balance">
-      <div class="stat-label">累計残高</div>
-      <div class="stat-val" id="headerBalance">¥0</div>
-    </div>
-    <div class="header-divider"></div>
     <div class="header-stat">
       <div class="stat-label">今月の支出</div>
       <div class="stat-val" id="headerExpense">¥0</div>
     </div>
+    <!-- 累計残高は非表示（データは保持）-->
+    <div style="display:none"><div id="headerBalance"></div></div>
   </div>
   <button class="reload-btn" id="reloadBtn" title="更新">🔄</button>
 </div>
