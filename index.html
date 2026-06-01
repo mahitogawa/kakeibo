@@ -951,6 +951,7 @@ async function saveCategories(){
 // ─── Firestoreリスナー ────────────────────────────────
 function subscribeData(){
   try{
+    fetchInitialBalance(); // 初期残高をFirestoreから取得
     unsubEntries=userRef().collection('entries').orderBy('date','desc').onSnapshot(
       snap=>{
         entries=snap.docs.map(d=>({...d.data(),id:d.id}));
@@ -1019,8 +1020,22 @@ function getBudgetKey(){ return 'budget_' + userKey; }
 function loadBudget(){ return parseInt(localStorage.getItem(getBudgetKey())||'0')||0; }
 function saveBudget(v){ localStorage.setItem(getBudgetKey(), v); }
 function getInitialBalanceKey(){ return 'initialBalance_'+(userKey||''); }
-function loadInitialBalance(){ return parseInt(localStorage.getItem(getInitialBalanceKey())||'0')||0; }
-function saveInitialBalance(v){ localStorage.setItem(getInitialBalanceKey(), v); }
+let cachedInitialBalance=0;
+function loadInitialBalance(){ return cachedInitialBalance; }
+async function saveInitialBalance(v){
+  cachedInitialBalance=v;
+  localStorage.setItem(getInitialBalanceKey(), v); // fallback
+  try{ await userRef().collection('settings').doc('initialBalance').set({value:v}); }catch(e){}
+}
+async function fetchInitialBalance(){
+  try{
+    const doc=await userRef().collection('settings').doc('initialBalance').get();
+    if(doc.exists){ cachedInitialBalance=doc.data().value||0; }
+    else{ cachedInitialBalance=loadInitialBalanceLocal(); }
+  }catch(e){ cachedInitialBalance=loadInitialBalanceLocal(); }
+  updateHeader();
+}
+function loadInitialBalanceLocal(){ return parseInt(localStorage.getItem(getInitialBalanceKey())||'0')||0; }
 
 function renderBudgetCard(expense){
   const budget=loadBudget();
