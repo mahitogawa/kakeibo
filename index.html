@@ -84,7 +84,7 @@
     background: white; border: 3px dashed #c5cae9;
     border-radius: 16px; padding: 28px 20px;
     cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
-    display: flex; align-items: center; gap: 20px;
+    display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px;
   }
   .upload-area:hover { border-color: #667eea; background: #f0f0ff; }
   .upload-area .receipt-illust {
@@ -96,7 +96,7 @@
   .receipt-line { display: none; }
   .upload-text { text-align: left; }
   .upload-area .label { font-size: 1.1rem; font-weight: 700; color: #444; }
-  .upload-area .sublabel { font-size: 0.9rem; color: #999; margin-top: 6px; line-height: 1.5; }
+  .upload-area .sublabel { font-size: 0.9rem; color: #999; margin-top: 4px; line-height: 1.5; }
   #fileInput { display: none; }
 
   /* Receipt Preview */
@@ -654,14 +654,6 @@
       </div>
     </div>
     <!-- 初期残高設定 -->
-    <div class="settings-section">
-      <div class="settings-section-title">🏦 累計残高の初期値を設定</div>
-      <div class="budget-input-wrap">
-        <input type="number" class="budget-input" id="initialBalanceInput" placeholder="例：25000" inputmode="numeric">
-        <button class="budget-save-btn" id="initialBalanceSaveBtn">保存</button>
-      </div>
-      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">銀行残高など、記録開始時点の実際の残高を入力してください。累計残高に加算されます。</div>
-    </div>
     <!-- 月の予算設定 -->
     <div class="settings-section">
       <div class="settings-section-title">💰 今月の予算を設定</div>
@@ -670,6 +662,14 @@
         <button class="budget-save-btn" id="budgetSaveBtn">保存</button>
       </div>
       <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">予算を設定すると「あと〇〇円使えます」が集計に表示されます</div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">🏦 累計残高の初期値を設定</div>
+      <div class="budget-input-wrap">
+        <input type="number" class="budget-input" id="initialBalanceInput" placeholder="例：25000" inputmode="numeric">
+        <button class="budget-save-btn" id="initialBalanceSaveBtn">保存</button>
+      </div>
+      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">銀行残高など、記録開始時点の実際の残高を入力してください。累計残高に加算されます。</div>
     </div>
 
     <!-- カテゴリ管理 -->
