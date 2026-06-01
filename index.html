@@ -43,12 +43,11 @@
   .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
   .header-stats { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .header-stat { flex: 1; text-align: center; }
-  /* 収入・支出・残高 — ラベルと数字を統一サイズで揃える */
-  .header-stat .stat-label { font-size: 0.9rem; font-weight: 600; opacity: 1; margin-bottom: 4px; letter-spacing: 0.02em; }
-  .header-stat .stat-val { font-size: 1.25rem; font-weight: 800; }
+  .header-stat .stat-label { font-size: 1rem; font-weight: 700; opacity: 0.9; margin-bottom: 6px; letter-spacing: 0.03em; }
+  .header-stat .stat-val { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; }
   .header-stat.balance .stat-label { font-size: 0.9rem; font-weight: 600; opacity: 1; }
   .header-stat.balance .stat-val { font-size: 1.9rem; font-weight: 800; }
-  .header-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.35); flex-shrink: 0; }
+  .header-divider { width: 1px; height: 44px; background: rgba(255,255,255,0.4); flex-shrink: 0; }
   .reload-btn {
     position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 14px;
     background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
@@ -923,7 +922,11 @@ function monthLabel(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月';}
 
 // ─── Firestore 操作 ───────────────────────────────────
 function userRef(){ return db.collection('users').doc(currentUser.uid); }
-async function saveEntry(data,id){ const c=userRef().collection('entries'); return id?c.doc(id).set(data,{merge:true}):c.add(data); }
+async function saveEntry(data,id){
+  const c=userRef().collection('entries');
+  if(id){ return c.doc(id).set(data,{merge:true}); }
+  return c.add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+}
 async function deleteEntry(id){ await userRef().collection('entries').doc(id).delete(); }
 async function saveShop(data,id){ const c=userRef().collection('shops'); return id?c.doc(id).set(data):c.add(data); }
 async function deleteShop(id){ await userRef().collection('shops').doc(id).delete(); }
@@ -1413,6 +1416,14 @@ function renderHistory(){
   if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>この月の記録はありません</p></div>';return;}
   const groups={};
   filtered.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e);});
+  // 同日内は新しい順（createdAtがあれば優先、なければ配列逆順）
+  Object.keys(groups).forEach(d=>{
+    groups[d].sort((a,b)=>{
+      const ta=a.createdAt?.toMillis?.()||0;
+      const tb=b.createdAt?.toMillis?.()||0;
+      return tb-ta;
+    });
+  });
   list.innerHTML=Object.keys(groups).sort((a,b)=>b.localeCompare(a)).map(date=>{
     const d=new Date(date+'T00:00:00');
     const label=`${d.getMonth()+1}月${d.getDate()}日（${['日','月','火','水','木','金','土'][d.getDay()]}）`;
