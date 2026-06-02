@@ -774,6 +774,17 @@
 </div>
 
 <script>
+// ─── 日付ユーティリティ（最優先で定義）──────────────────
+function todayLocal(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function setTodayDate(){
+  const el=document.getElementById('fDate');
+  if(el) el.value=todayLocal();
+}
+document.addEventListener('DOMContentLoaded', setTodayDate);
+
 // ─── 秘密URL方式の初期化（最初に実行）─────────────────
 (function(){
   var LS_KEY = 'nyanlog_userkey';
@@ -1818,24 +1829,7 @@ fAmountEl.addEventListener('input', () => {
   amountDisplayEl.textContent = '¥' + v.toLocaleString('ja-JP');
 });
 
-function todayLocal(){
-  const d=new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function formatDateJP(yyyy_mm_dd){
-  if(!yyyy_mm_dd) return '';
-  const [y,m,d] = yyyy_mm_dd.split('-');
-  return `${y}年${parseInt(m)}月${parseInt(d)}日`;
-}
-// fDate（type=text）に日本語で日付を直接表示
-function setTodayDate(){
-  const el = document.getElementById('fDate');
-  if(!el) return;
-  el.value = todayLocal();
-}
-setTodayDate();
-setTimeout(setTodayDate, 300);
-setTimeout(setTodayDate, 1000);
+
 
 // ─── バックアップ・復元 ───────────────────────────────
 document.getElementById('exportBtn').addEventListener('click',()=>{
