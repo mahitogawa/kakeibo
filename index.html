@@ -1156,7 +1156,7 @@ async function processImage(file){
     const statusTextEl=document.getElementById('aiStatusText');
     statusEl.className='ai-status analyzing';
     statusTextEl.innerHTML='<span class="spinner"></span> レシートを解析中...';
-    document.getElementById('fDate').value=todayLocal();
+    setTodayDate();
     try{
       let data=null;
       // Cowork AI が使える場合は優先（精度高）
@@ -1426,7 +1426,7 @@ function resetForm(){
   document.getElementById('shopLabel').textContent='購入先（店名）';
   const saveBtn=document.getElementById('saveBtn');
   saveBtn.textContent='✅ 保存する'; saveBtn.style.background='';
-  document.getElementById('fDate').value=todayLocal();
+  setTodayDate();
   ['fShop','fItems','fAmount'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('amountDisplay').textContent='¥0';
   selectedCategory='';
@@ -1822,7 +1822,16 @@ function todayLocal(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-document.getElementById('fDate').value=todayLocal();
+function setTodayDate(){
+  const el=document.getElementById('fDate');
+  if(!el) return;
+  const t=todayLocal();
+  el.value=t;
+  el.setAttribute('value', t); // iOS Safari対応
+}
+setTodayDate();
+setTimeout(setTodayDate, 300);
+setTimeout(setTodayDate, 1000);
 
 // ─── バックアップ・復元 ───────────────────────────────
 document.getElementById('exportBtn').addEventListener('click',()=>{
