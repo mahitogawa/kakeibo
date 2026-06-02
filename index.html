@@ -140,11 +140,8 @@
     color: #1a1a2e; background: #f5f6fc; transition: border-color 0.2s; outline: none;
   }
   .form-group input[type="date"] {
-    font-size: 1.25rem; padding: 14px 16px; min-height: 54px;
-    text-align: center;
-  }
-  @media (min-width: 600px) {
-    .form-group input[type="date"] { text-align: left; }
+    font-size: 1.1rem; padding: 14px 16px;
+    -webkit-appearance: none; appearance: none;
   }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #667eea; background: white; }
   .form-group textarea { resize: none; height: 80px; }
@@ -560,7 +557,13 @@
       <h3>✏️ 内容を確認・修正して保存</h3>
       <div class="form-group">
         <label>日付</label>
-        <input type="date" id="fDate">
+        <div style="position:relative">
+          <input type="text" id="fDateDisplay" readonly
+            style="width:100%;padding:14px 16px;border:2px solid #bdc5ee;border-radius:12px;font-size:1.1rem;font-family:var(--font);color:#1a1a2e;background:#f5f6fc;outline:none;cursor:pointer;-webkit-appearance:none"
+            placeholder="日付を選択">
+          <input type="date" id="fDate"
+            style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;-webkit-appearance:none">
+        </div>
       </div>
       <div class="form-group" id="shopGroup">
         <label id="shopLabel">購入先（店名）</label>
@@ -1196,7 +1199,7 @@ async function processImage(file){
         }
       }
       if(!data)throw new Error('parse failed');
-      if(data.date)document.getElementById('fDate').value=data.date;
+      if(data.date){document.getElementById('fDate').value=data.date;syncDateDisplay(data.date);}
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
@@ -1502,7 +1505,7 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   document.querySelector('.tab[data-tab="input"]').classList.add('active');
   document.getElementById('tab-input').classList.add('active');
   // フォームに値をセット
-  document.getElementById('fDate').value = e.date;
+  document.getElementById('fDate').value = e.date; syncDateDisplay(e.date);
   document.getElementById('fShop').value = e.shop;
   document.getElementById('fItems').value = e.items||'';
   document.getElementById('fAmount').value = e.amount;
@@ -1822,13 +1825,27 @@ function todayLocal(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-function setTodayDate(){
-  const el=document.getElementById('fDate');
-  if(!el) return;
-  const t=todayLocal();
-  el.value=t;
-  el.setAttribute('value', t); // iOS Safari対応
+function formatDateJP(yyyy_mm_dd){
+  if(!yyyy_mm_dd) return '';
+  const [y,m,d] = yyyy_mm_dd.split('-');
+  return `${y}年${parseInt(m)}月${parseInt(d)}日`;
 }
+function syncDateDisplay(val){
+  const disp = document.getElementById('fDateDisplay');
+  if(disp) disp.value = val ? formatDateJP(val) : '';
+}
+function setTodayDate(){
+  const el = document.getElementById('fDate');
+  if(!el) return;
+  const t = todayLocal();
+  el.value = t;
+  el.setAttribute('value', t);
+  syncDateDisplay(t);
+}
+// dateが変わったら表示テキストも更新
+document.getElementById('fDate').addEventListener('change', function(){
+  syncDateDisplay(this.value);
+});
 setTodayDate();
 setTimeout(setTodayDate, 300);
 setTimeout(setTodayDate, 1000);
