@@ -635,6 +635,15 @@
 <!-- TAB: 設定 -->
 <div class="tab-content" id="tab-settings">
   <div class="container">
+    <!-- 月の予算設定 -->
+    <div class="settings-section">
+      <div class="settings-section-title">💰 今月の予算を設定</div>
+      <div class="budget-input-wrap">
+        <input type="number" class="budget-input" id="budgetInput" placeholder="例：100000" min="0" inputmode="numeric">
+        <button class="budget-save-btn" id="budgetSaveBtn">保存</button>
+      </div>
+      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">予算を設定すると「あと〇〇円使えます」が集計に表示されます</div>
+    </div>
     <div class="settings-section">
       <div class="settings-section-title">🏪 よく使うお店を登録</div>
       <div id="shopList"></div>
@@ -653,26 +662,6 @@
         <button class="btn-add" id="addShopBtn" style="width:100%">＋ 登録する</button>
       </div>
     </div>
-    <!-- 初期残高設定 -->
-    <!-- 月の予算設定 -->
-    <div class="settings-section">
-      <div class="settings-section-title">💰 今月の予算を設定</div>
-      <div class="budget-input-wrap">
-        <input type="number" class="budget-input" id="budgetInput" placeholder="例：100000" min="0" inputmode="numeric">
-        <button class="budget-save-btn" id="budgetSaveBtn">保存</button>
-      </div>
-      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">予算を設定すると「あと〇〇円使えます」が集計に表示されます</div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-section-title">🏦 累計残高の初期値を設定</div>
-      <div class="budget-input-wrap">
-        <input type="number" class="budget-input" id="initialBalanceInput" placeholder="例：25000" inputmode="numeric">
-        <button class="budget-save-btn" id="initialBalanceSaveBtn">保存</button>
-      </div>
-      <div style="padding:0 16px 14px;font-size:0.85rem;color:#999">銀行残高など、記録開始時点の実際の残高を入力してください。累計残高に加算されます。</div>
-    </div>
-
-    <!-- カテゴリ管理 -->
     <div class="settings-section">
       <div class="settings-section-title">📂 カテゴリ管理</div>
       <div id="catList"></div>
@@ -1639,7 +1628,8 @@ function renderSettings(){
   if(shops.length===0){
     list.innerHTML='<div style="padding:16px;text-align:center;color:#bbb;font-size:0.85rem">まだ登録がありません</div>';
   } else {
-    list.innerHTML=shops.map(s=>`
+    const sorted=[...shops].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+    list.innerHTML=sorted.map(s=>`
       <div class="settings-row">
         <div class="settings-row-icon">${CAT_ICONS[s.cat]||'🏪'}</div>
         <div style="flex:1"><div class="settings-row-name">${s.name}</div><div class="settings-row-cat">${s.cat}</div></div>
