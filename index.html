@@ -1374,7 +1374,8 @@ function openPicker(mode){
       opts.innerHTML='<div style="padding:28px;text-align:center;color:#bbb;font-size:0.95rem">⚙️ 設定タブでお店を登録できます</div>';
     } else {
       const cur=document.getElementById('fShop').value;
-      opts.innerHTML=shops.map(s=>`
+      const sortedShops=[...shops].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+      opts.innerHTML=sortedShops.map(s=>`
         <div class="picker-option${cur===s.name?' selected':''}" data-mode="shop" data-val="${s.name}" data-cat="${s.cat}">
           <span class="opt-icon">${CAT_ICONS[s.cat]||'🏪'}</span>
           <span class="opt-label">${s.name}<span class="opt-sub">${s.cat}</span></span>
