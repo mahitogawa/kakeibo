@@ -557,13 +557,8 @@
       <h3>✏️ 内容を確認・修正して保存</h3>
       <div class="form-group">
         <label>日付</label>
-        <div style="position:relative">
-          <input type="text" id="fDateDisplay" readonly
-            style="width:100%;padding:14px 16px;border:2px solid #bdc5ee;border-radius:12px;font-size:1.1rem;font-family:var(--font);color:#1a1a2e;background:#f5f6fc;outline:none;cursor:pointer;-webkit-appearance:none"
-            placeholder="日付を選択">
-          <input type="date" id="fDate"
-            style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;-webkit-appearance:none">
-        </div>
+        <input type="text" id="fDate" readonly
+          style="background:#f5f6fc;cursor:default">
       </div>
       <div class="form-group" id="shopGroup">
         <label id="shopLabel">購入先（店名）</label>
@@ -586,10 +581,11 @@
       </div>
       <div class="form-group" id="payGroup">
         <label>支払い方法</label>
-        <button type="button" class="picker-btn has-val" id="payPickerBtn">
-          <span id="payPickerVal">💵 現金</span>
-          <span class="picker-arrow">›</span>
-        </button>
+        <div class="category-chips" id="payChips">
+          <div class="chip" data-pay="クレジット">💳 クレジット</div>
+          <div class="chip" data-pay="現金">💵 現金</div>
+          <div class="chip" data-pay="その他">🏷 その他</div>
+        </div>
       </div>
       <button class="btn btn-primary" id="saveBtn">✅ 保存する</button>
     </div>
@@ -1199,7 +1195,10 @@ async function processImage(file){
         }
       }
       if(!data)throw new Error('parse failed');
-      if(data.date){document.getElementById('fDate').value=data.date;syncDateDisplay(data.date);}
+      if(data.date){
+        const el=document.getElementById('fDate');
+        el.dataset.value=data.date; el.value=formatDateJP(data.date);
+      }
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
       if(data.category)selectCategory(data.category);
@@ -1335,9 +1334,9 @@ function selectCategory(cat){
 }
 function selectPayment(pay){
   selectedPayment=pay;
-  const p=PAY_LIST.find(x=>x.key===pay);
-  document.getElementById('payPickerVal').textContent=(p?p.icon+' ':'')+pay;
-  document.getElementById('payPickerBtn').classList.add('has-val');
+  document.querySelectorAll('#payChips .chip').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.pay===pay);
+  });
 }
 selectPayment('クレジット');
 
@@ -1391,14 +1390,16 @@ function openPicker(mode){
   });
 }
 document.getElementById('catPickerBtn').addEventListener('click',()=>openPicker('cat'));
-document.getElementById('payPickerBtn').addEventListener('click',()=>openPicker('pay'));
+document.querySelectorAll('#payChips .chip').forEach(c=>{
+  c.addEventListener('click',()=>selectPayment(c.dataset.pay));
+});
 document.getElementById('shopPickerBtn').addEventListener('click',()=>openPicker('shop'));
 document.getElementById('pickerOverlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('pickerOverlay'))document.getElementById('pickerOverlay').classList.remove('open');
 });
 document.getElementById('saveBtn').addEventListener('click',async()=>{
   if(!currentUser){alert('ログインしてください');return;}
-  const date=document.getElementById('fDate').value;
+  const date=document.getElementById('fDate').dataset.value||todayLocal();
   const shop=document.getElementById('fShop').value.trim();
   const amount=parseInt(document.getElementById('fAmount').value)||0;
   const items=document.getElementById('fItems').value.trim();
@@ -1505,7 +1506,7 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   document.querySelector('.tab[data-tab="input"]').classList.add('active');
   document.getElementById('tab-input').classList.add('active');
   // フォームに値をセット
-  document.getElementById('fDate').value = e.date; syncDateDisplay(e.date);
+  const fdEl=document.getElementById('fDate'); fdEl.dataset.value=e.date; fdEl.value=formatDateJP(e.date);
   document.getElementById('fShop').value = e.shop;
   document.getElementById('fItems').value = e.items||'';
   document.getElementById('fAmount').value = e.amount;
@@ -1830,22 +1831,14 @@ function formatDateJP(yyyy_mm_dd){
   const [y,m,d] = yyyy_mm_dd.split('-');
   return `${y}年${parseInt(m)}月${parseInt(d)}日`;
 }
-function syncDateDisplay(val){
-  const disp = document.getElementById('fDateDisplay');
-  if(disp) disp.value = val ? formatDateJP(val) : '';
-}
+// fDate（type=text）に日本語で日付を直接表示
 function setTodayDate(){
   const el = document.getElementById('fDate');
   if(!el) return;
-  const t = todayLocal();
-  el.value = t;
-  el.setAttribute('value', t);
-  syncDateDisplay(t);
+  const t = todayLocal(); // 内部値として保持
+  el.dataset.value = t;  // YYYY-MM-DD を data属性に保存
+  el.value = formatDateJP(t); // 表示は日本語
 }
-// dateが変わったら表示テキストも更新
-document.getElementById('fDate').addEventListener('change', function(){
-  syncDateDisplay(this.value);
-});
 setTodayDate();
 setTimeout(setTodayDate, 300);
 setTimeout(setTodayDate, 1000);
