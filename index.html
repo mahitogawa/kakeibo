@@ -361,7 +361,7 @@
 
   /* ピッカーボタン */
   .picker-btn { width: 100%; padding: 14px 16px; border: 2px solid #bdc5ee; border-radius: 12px; font-size: 1.05rem; font-weight: 700; background: #f5f6ff; color: #667eea; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; transition: all 0.2s; font-family: var(--font); }
-  .picker-btn.has-val { border-color: #667eea; background: #eeeeff; color: #1a1a2e; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+  .picker-btn.has-val { border-color: #667eea; background: #eeeeff; color: #1a1a2e; }
   .picker-btn .picker-arrow { color: #a0a8e8; font-size: 1.3rem; margin-left: 8px; flex-shrink: 0; }
   .picker-btn.has-val .picker-arrow { color: #667eea; }
 
@@ -935,7 +935,7 @@ function rebuildCatMaps(){
 rebuildCatMaps();
 
 const PAY_ICONS  = {'現金':'💵','クレジット':'💳','その他':'🏷'};
-const PAY_LIST = [{key:'現金',icon:'💵'},{key:'クレジット',icon:'💳'},{key:'その他',icon:'🏷'}];
+const PAY_LIST = [{key:'クレジット',icon:'💳'},{key:'現金',icon:'💵'},{key:'その他',icon:'🏷'}];
 
 // ─── 状態変数 ─────────────────────────────────────────
 let entries=[], shops=[], currentUser=null;
@@ -1336,7 +1336,7 @@ function selectPayment(pay){
   document.getElementById('payPickerVal').textContent=(p?p.icon+' ':'')+pay;
   document.getElementById('payPickerBtn').classList.add('has-val');
 }
-selectPayment('現金');
+selectPayment('クレジット');
 
 // ボトムシートを開く
 function openPicker(mode){
@@ -1432,7 +1432,7 @@ function resetForm(){
   selectedCategory='';
   document.getElementById('catPickerVal').textContent='📂 タップして選択';
   document.getElementById('catPickerBtn').classList.remove('has-val');
-  selectPayment('現金');
+  selectPayment('クレジット');
   document.getElementById('receiptPreview').classList.remove('visible');
   document.getElementById('ocrResult').classList.remove('visible');
   document.getElementById('receiptImg').src='';fileInput.value='';
