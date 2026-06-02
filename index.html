@@ -559,6 +559,7 @@
         <label>日付</label>
         <input type="text" id="fDate" readonly
           style="background:#f5f6fc;cursor:default">
+        <input type="hidden" id="fDateVal">
       </div>
       <div class="form-group" id="shopGroup">
         <label id="shopLabel">購入先（店名）</label>
@@ -1196,8 +1197,8 @@ async function processImage(file){
       }
       if(!data)throw new Error('parse failed');
       if(data.date){
-        const el=document.getElementById('fDate');
-        el.dataset.value=data.date; el.value=formatDateJP(data.date);
+        document.getElementById('fDate').value=formatDateJP(data.date);
+        document.getElementById('fDateVal').value=data.date;
       }
       if(data.shop)document.getElementById('fShop').value=data.shop;
       if(data.total){document.getElementById('fAmount').value=data.total;document.getElementById('amountDisplay').textContent='¥'+Number(data.total).toLocaleString('ja-JP');}
@@ -1399,7 +1400,7 @@ document.getElementById('pickerOverlay').addEventListener('click',e=>{
 });
 document.getElementById('saveBtn').addEventListener('click',async()=>{
   if(!currentUser){alert('ログインしてください');return;}
-  const date=document.getElementById('fDate').dataset.value||todayLocal();
+  const date=document.getElementById('fDateVal').value||todayLocal();
   const shop=document.getElementById('fShop').value.trim();
   const amount=parseInt(document.getElementById('fAmount').value)||0;
   const items=document.getElementById('fItems').value.trim();
@@ -1506,7 +1507,7 @@ document.getElementById('editBtn').addEventListener('click',()=>{
   document.querySelector('.tab[data-tab="input"]').classList.add('active');
   document.getElementById('tab-input').classList.add('active');
   // フォームに値をセット
-  const fdEl=document.getElementById('fDate'); fdEl.dataset.value=e.date; fdEl.value=formatDateJP(e.date);
+  document.getElementById('fDate').value=formatDateJP(e.date); document.getElementById('fDateVal').value=e.date;
   document.getElementById('fShop').value = e.shop;
   document.getElementById('fItems').value = e.items||'';
   document.getElementById('fAmount').value = e.amount;
@@ -1834,10 +1835,11 @@ function formatDateJP(yyyy_mm_dd){
 // fDate（type=text）に日本語で日付を直接表示
 function setTodayDate(){
   const el = document.getElementById('fDate');
+  const hid = document.getElementById('fDateVal');
   if(!el) return;
-  const t = todayLocal(); // 内部値として保持
-  el.dataset.value = t;  // YYYY-MM-DD を data属性に保存
-  el.value = formatDateJP(t); // 表示は日本語
+  const t = todayLocal();
+  el.value = formatDateJP(t);
+  if(hid) hid.value = t;
 }
 setTodayDate();
 setTimeout(setTodayDate, 300);
