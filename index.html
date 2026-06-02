@@ -484,12 +484,12 @@
 <div class="header">
   <h1>🐱 にゃんログ家計簿</h1>
   <div class="header-stats">
-    <div class="header-stat">
+    <div class="header-stat" id="headerIncomeBtn" style="cursor:pointer" title="タップで履歴へ">
       <div class="stat-label">今月の収入</div>
       <div class="stat-val" id="headerIncome">¥0</div>
     </div>
     <div class="header-divider"></div>
-    <div class="header-stat">
+    <div class="header-stat" id="headerExpenseBtn" style="cursor:pointer" title="タップで履歴へ">
       <div class="stat-label">今月の支出</div>
       <div class="stat-val" id="headerExpense">¥0</div>
     </div>
@@ -863,6 +863,8 @@ function initUserKey(){ return window._userKey; }
 })();
 
 // ─── 🔄ボタン ────────────────────────────────────────
+document.getElementById('headerIncomeBtn').addEventListener('click',()=>switchTab('history'));
+document.getElementById('headerExpenseBtn').addEventListener('click',()=>switchTab('history'));
 document.getElementById('reloadBtn').addEventListener('click', () => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistration().then(reg => {
@@ -1768,19 +1770,19 @@ document.getElementById('clearAllBtn').addEventListener('click',async()=>{
 });
 // 足跡アニメーション
 function spawnPaws(){
-  const count = 6;
+  const count = 2;
   for(let i=0;i<count;i++){
     setTimeout(()=>{
       const el = document.createElement('div');
       el.className = 'paw-burst';
       el.textContent = '🐾';
-      el.style.left = (20 + Math.random()*60) + 'vw';
-      el.style.top  = (40 + Math.random()*30) + 'vh';
-      el.style.animationDelay = (Math.random()*0.3)+'s';
-      el.style.fontSize = (1.4 + Math.random()*1.2) + 'rem';
+      el.style.left = (30 + Math.random()*40) + 'vw';
+      el.style.top  = (40 + Math.random()*20) + 'vh';
+      el.style.animationDelay = (Math.random()*0.2)+'s';
+      el.style.fontSize = (1.4 + Math.random()*0.8) + 'rem';
       document.body.appendChild(el);
       setTimeout(()=>el.remove(), 1400);
-    }, i*120);
+    }, i*150);
   }
 }
 
@@ -1830,7 +1832,7 @@ document.getElementById('importFile').addEventListener('change',async e=>{
   reader.readAsText(file);
 });
 
-// ─── CSVエクスポート ───────────────────────────────────
+// ─── CSVプレビュー ───────────────────────────────────
 document.getElementById('csvExportBtn').addEventListener('click',()=>{
   const header=['日付','店名','品目・メモ','カテゴリ','支払方法','種別','金額'];
   const rows=entries.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>[
@@ -1843,11 +1845,28 @@ document.getElementById('csvExportBtn').addEventListener('click',()=>{
     e.type==='収入'?e.amount:-(e.amount||0)
   ]);
   const csv='\uFEFF'+[header,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`nyanlog_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click(); URL.revokeObjectURL(url);
+  // プレビュー画面を生成
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:#f5f6fc;z-index:9999;display:flex;flex-direction:column;font-family:sans-serif';
+  const toolbar=document.createElement('div');
+  toolbar.style.cssText='display:flex;align-items:center;gap:12px;padding:16px;background:white;border-bottom:2px solid #dde1f0;';
+  toolbar.innerHTML=`<button id="csvBackBtn" style="padding:8px 18px;border:none;border-radius:10px;background:#667eea;color:white;font-size:1rem;font-weight:700;cursor:pointer">← 戻る</button>
+    <span style="font-weight:700;color:#333">📊 CSVプレビュー（${rows.length}件）</span>
+    <button id="csvDownloadBtn" style="margin-left:auto;padding:8px 18px;border:none;border-radius:10px;background:#22c55e;color:white;font-size:1rem;font-weight:700;cursor:pointer">⬇ ダウンロード</button>`;
+  const table=document.createElement('div');
+  table.style.cssText='overflow:auto;flex:1;padding:16px';
+  const tableRows=[header,...rows].map((r,i)=>`<tr style="background:${i===0?'#f0f0ff':i%2===0?'white':'#fafafa'}">${r.map((v,j)=>`<${i===0?'th':'td'} style="padding:8px 10px;border:1px solid #dde1f0;white-space:nowrap;font-size:${i===0?'0.85':'0.9'}rem;${j===6?'text-align:right':''}">${v}</${i===0?'th':'td'}>`).join('')}</tr>`).join('');
+  table.innerHTML=`<table style="border-collapse:collapse;min-width:100%">${tableRows}</table>`;
+  overlay.appendChild(toolbar); overlay.appendChild(table);
+  document.body.appendChild(overlay);
+  document.getElementById('csvBackBtn').addEventListener('click',()=>overlay.remove());
+  document.getElementById('csvDownloadBtn').addEventListener('click',()=>{
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`nyanlog_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  });
 });
 
 // ─── 印刷・PDF ───────────────────────────────────────
