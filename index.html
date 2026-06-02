@@ -355,7 +355,7 @@
     text-align: right; outline: none; min-width: 0;
     transition: border-color 0.2s; -moz-appearance: textfield;
   }
-  .amount-hero-input:focus { border-color: #764ba2; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+  .amount-hero-input:focus { border-color: #764ba2; }
   .amount-hero-input::-webkit-inner-spin-button,
   .amount-hero-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
@@ -1272,7 +1272,7 @@ function parseReceiptText(text){
   const rawShop=lines.find(l=>l.length>1&&!/^[\d¥￥\\＼\-－—―\s]/.test(l))||lines[0]||'';
   const shop=rawShop.replace(/^[\-－—―\s]+/,'').trim();
   // 日付
-  let date=new Date().toISOString().split('T')[0];
+  let date=todayLocal();
   for(const line of lines){
     const m=line.match(/(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})/)||line.match(/(\d{2})[\.\/](\d{1,2})[\.\/](\d{1,2})/);
     if(m){
