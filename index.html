@@ -59,8 +59,6 @@
   .tabs {
     display: flex; background: white;
     border-bottom: 1px solid #e8eaf0;
-    position: sticky; top: 0; z-index: 99;
-    position: sticky; top: 0;
   }
   .tab {
     flex: 1; padding: 12px 4px 10px; text-align: center;
@@ -83,19 +81,26 @@
     background: #667eea; border-radius: 2px;
     transition: left 0.28s cubic-bezier(0.4,0,0.2,1), width 0.28s cubic-bezier(0.4,0,0.2,1);
   }
-  .tabs-wrap { position: relative; }
+  .tabs-wrap {
+    position: sticky; top: 0; z-index: 99;
+    background: white;
+  }
   .container { max-width: 600px; margin: 0 auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
   /* スワイプ対応ラッパー */
   #tabSlider {
     overflow: hidden; position: relative; width: 100%;
+    height: calc(100dvh - 200px);
   }
   #tabTrack {
     display: flex; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); will-change: transform;
+    height: 100%;
   }
   #tabTrack .tab-content {
     display: block; min-width: 100%; width: 100%; flex-shrink: 0;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    height: 100%;
   }
   #tabTrack .tab-content.active { display: block; }
 
