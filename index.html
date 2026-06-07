@@ -58,26 +58,46 @@
   .reload-btn:active { background: rgba(255,255,255,0.4); transform: rotate(180deg); transition: transform 0.4s; }
   .tabs {
     display: flex; background: white;
-    border-bottom: 2px solid #eef0f5;
+    border-bottom: 1px solid #e8eaf0;
     position: sticky; top: 0; z-index: 99;
+    position: sticky; top: 0;
   }
   .tab {
-    flex: 1; padding: 11px 8px; text-align: center;
-    cursor: pointer; font-size: 1rem; font-weight: 700;
-    color: #888; border-bottom: 3px solid transparent; transition: all 0.2s;
+    flex: 1; padding: 12px 4px 10px; text-align: center;
+    cursor: pointer; font-size: 0.72rem; font-weight: 600;
+    color: #aaa; border: none; background: none;
+    outline: none; -webkit-appearance: none; font-family: inherit;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     user-select: none; -webkit-user-select: none;
-    /* button reset */
-    background: none; border-top: none; border-left: none; border-right: none;
-    outline: none; -webkit-appearance: none; font-family: inherit;
+    transition: color 0.2s; letter-spacing: 0.02em;
   }
   .tab:focus { outline: none; box-shadow: none; }
-  .tab:focus-visible { outline: 2px solid #667eea; outline-offset: -2px; }
-  .tab.active { color: #667eea; border-bottom-color: #667eea; }
-  .tab-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+  .tab.active { color: #667eea; }
+  .tab-icon { display: block; margin: 0 auto 4px; }
+  .tabs-indicator-wrap {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 2.5px;
+    pointer-events: none;
+  }
+  .tabs-indicator {
+    position: absolute; bottom: 0; height: 2.5px;
+    background: #667eea; border-radius: 2px;
+    transition: left 0.28s cubic-bezier(0.4,0,0.2,1), width 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  .tabs-wrap { position: relative; }
   .container { max-width: 600px; margin: 0 auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
+  /* スワイプ対応ラッパー */
+  #tabSlider {
+    overflow: hidden; position: relative; width: 100%;
+  }
+  #tabTrack {
+    display: flex; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); will-change: transform;
+  }
+  #tabTrack .tab-content {
+    display: block; min-width: 100%; width: 100%; flex-shrink: 0;
+  }
+  #tabTrack .tab-content.active { display: block; }
 
   /* Upload */
   .upload-area {
@@ -147,8 +167,8 @@
   .form-group textarea { resize: none; height: 80px; }
   .category-chips { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .category-chips::-webkit-scrollbar { display: none; }
-  .chip { padding: 7px 13px; border-radius: 24px; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; flex-shrink: 0; }
-  .chip.selected { color: #3730a3; border-color: #667eea; background: #eef2ff; font-weight: 900; }
+  .chip { padding: 7px 13px; border-radius: 24px; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: 2px solid #e5e7eb; background: #f9fafb; color: #555; transition: all 0.15s; flex-shrink: 0; outline: none; }
+  .chip.selected { color: white; border-color: transparent; background: #667eea; font-weight: 900; outline: none; box-shadow: none; }
   .chip[data-cat="食費"].selected { background: #f97316; }
   .chip[data-cat="日用品"].selected { background: #8b5cf6; }
   .chip[data-cat="交通費"].selected { background: #3b82f6; }
@@ -496,12 +516,29 @@
   <button class="reload-btn" id="reloadBtn" title="更新">🔄</button>
 </div>
 
-<div class="tabs">
-  <button class="tab active" data-tab="input"><span class="tab-icon">📷</span>入力</button>
-  <button class="tab" data-tab="history"><span class="tab-icon">📋</span>履歴</button>
-  <button class="tab" data-tab="summary"><span class="tab-icon">📊</span>集計</button>
-  <button class="tab" data-tab="settings"><span class="tab-icon">⚙️</span>設定</button>
+<div class="tabs-wrap">
+<div class="tabs" id="tabsBar">
+  <button class="tab active" data-tab="input">
+    <svg class="tab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    入力
+  </button>
+  <button class="tab" data-tab="history">
+    <svg class="tab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+    履歴
+  </button>
+  <button class="tab" data-tab="summary">
+    <svg class="tab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    集計
+  </button>
+  <button class="tab" data-tab="settings">
+    <svg class="tab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    設定
+  </button>
 </div>
+<div class="tabs-indicator-wrap"><div class="tabs-indicator" id="tabIndicator"></div></div>
+</div>
+
+<div id="tabSlider"><div id="tabTrack">
 
 <!-- TAB: 入力 -->
 <div class="tab-content active" id="tab-input">
@@ -746,6 +783,8 @@
     </div>
   </div>
 </div>
+
+</div></div><!-- /tabTrack /tabSlider -->
 
 <!-- カテゴリ内訳シート -->
 <div class="cat-detail-overlay" id="catDetailOverlay">
@@ -1141,20 +1180,87 @@ document.querySelectorAll('.type-btn').forEach(btn=>{
     }
   });
 });
+const TAB_ORDER = ['input','history','summary','settings'];
+
+function updateIndicator(){
+  const activeTab = document.querySelector('.tab.active');
+  const indicator = document.getElementById('tabIndicator');
+  if(!activeTab || !indicator) return;
+  const tabsBar = document.getElementById('tabsBar');
+  const barRect = tabsBar.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+  indicator.style.left  = (tabRect.left - barRect.left) + 'px';
+  indicator.style.width = tabRect.width + 'px';
+}
+
+function switchTab(tabName){
+  const idx = TAB_ORDER.indexOf(tabName);
+  if(idx < 0) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-'+tabName));
+  document.getElementById('tabTrack').style.transform = `translateX(-${idx * 100}%)`;
+  updateIndicator();
+  if(tabName==='history') renderHistory();
+  if(tabName==='summary') renderSummary();
+  if(tabName==='settings') renderSettings();
+}
+
+window.addEventListener('load', updateIndicator);
+window.addEventListener('resize', updateIndicator);
+
 document.querySelectorAll('.tab').forEach(tab=>{
   function doTab(){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
-    if(tab.dataset.tab==='history')renderHistory();
-    if(tab.dataset.tab==='summary')renderSummary();
-    if(tab.dataset.tab==='settings')renderSettings();
+    switchTab(tab.dataset.tab);
   }
   tab.addEventListener('click', doTab);
-  // iOS Safari: divのclickが発火しない問題の対策
   tab.addEventListener('touchend', function(e){ e.preventDefault(); doTab(); });
 });
+
+// ─── スワイプ処理 ────────────────────────────────────
+(function(){
+  const slider = document.getElementById('tabSlider');
+  const track  = document.getElementById('tabTrack');
+  let startX=0, startY=0, isDragging=false, currentIdx=0, startTranslate=0;
+  const SWIPE_THRESHOLD = 50;
+
+  slider.addEventListener('touchstart', e=>{
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDragging = false;
+    currentIdx = TAB_ORDER.indexOf(document.querySelector('.tab.active')?.dataset.tab || 'input');
+    startTranslate = -currentIdx * 100;
+  },{passive:true});
+
+  slider.addEventListener('touchmove', e=>{
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if(!isDragging && Math.abs(dy) > Math.abs(dx)) return; // 縦スクロール優先
+    if(!isDragging && Math.abs(dx) > 8) isDragging = true;
+    if(!isDragging) return;
+    e.preventDefault();
+    const pct = (dx / slider.offsetWidth) * 100;
+    const newTranslate = Math.max(
+      -(TAB_ORDER.length - 1) * 100,
+      Math.min(0, startTranslate + pct)
+    );
+    track.style.transition = 'none';
+    track.style.transform = `translateX(${newTranslate}%)`;
+  },{passive:false});
+
+  slider.addEventListener('touchend', e=>{
+    if(!isDragging) return;
+    isDragging = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    track.style.transition = 'transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+    if(dx < -SWIPE_THRESHOLD && currentIdx < TAB_ORDER.length - 1){
+      switchTab(TAB_ORDER[currentIdx + 1]);
+    } else if(dx > SWIPE_THRESHOLD && currentIdx > 0){
+      switchTab(TAB_ORDER[currentIdx - 1]);
+    } else {
+      track.style.transform = `translateX(${startTranslate}%)`;
+    }
+  },{passive:true});
+})();
 const uploadArea=document.getElementById('uploadArea');
 const fileInput=document.getElementById('fileInput');
 uploadArea.addEventListener('click',()=>fileInput.click());
