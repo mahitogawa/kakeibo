@@ -92,6 +92,8 @@
   #tabSlider {
     overflow: hidden; position: relative; width: 100%;
     height: calc(100dvh - 200px);
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    box-sizing: border-box;
   }
   #tabTrack {
     display: flex; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); will-change: transform;
@@ -963,6 +965,13 @@ function syncTabsTop(){
   const hdr = document.querySelector('.header');
   const tabs = document.querySelector('.tabs');
   if(hdr && tabs) tabs.style.top = hdr.offsetHeight + 'px';
+  // スライダーの高さを動的にセット
+  const slider = document.getElementById('tabSlider');
+  const tabsWrap = document.querySelector('.tabs-wrap');
+  if(slider && hdr && tabsWrap){
+    const usedH = hdr.offsetHeight + tabsWrap.offsetHeight;
+    slider.style.height = (window.innerHeight - usedH) + 'px';
+  }
 }
 window.addEventListener('load', syncTabsTop);
 window.addEventListener('resize', syncTabsTop);
